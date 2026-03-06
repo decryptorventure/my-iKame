@@ -3,6 +3,18 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type Role = 'employee' | 'new_employee' | 'manager' | 'admin';
 
+export interface Reward {
+  id: number;
+  title: string;
+  desc: string;
+  cost: number;
+  icon: any; // Using any for Lucide icons in store to avoid complex typing for now
+  gradient: string;
+  tag: string | null;
+  stock: number;
+  category: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -20,6 +32,9 @@ export interface User {
   dob?: string;
   startDate?: string;
   online: boolean;
+  hasCompletedWelcomeTour?: boolean;
+  hasCompletedAdminTour?: boolean;
+  hasReceivedOnboardingReward?: boolean;
 }
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info' | 'exp' | 'levelup';
@@ -96,6 +111,10 @@ export interface Quest {
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   tabId: string;
   deadline?: string;
+  howToComplete?: string;
+  eventName?: string;
+  eventDesc?: string;
+  eventEndTime?: string;
 }
 
 export interface RewardHistory {
@@ -105,6 +124,22 @@ export interface RewardHistory {
   cost: number;
   date: string;
   status: 'processing' | 'delivered';
+}
+
+export interface Post {
+  id: number;
+  author: { name: string; avatar: string; title: string };
+  content: string;
+  image?: string;
+  time: string;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+  type: 'announcement' | 'update' | 'achievement' | 'event' | 'ai_update' | 'kudos';
+  isPinned?: boolean;
+  badge?: string;
+  featuredUser?: { name: string; title: string; avatar: string };
+  expEarned?: number;
 }
 
 export interface CelebrationItem {
@@ -120,30 +155,33 @@ export interface CelebrationItem {
 // ─── MOCK DATA ────────────────────────────────────────────────
 
 export const MOCK_USERS: Record<string, { user: User; password: string }> = {
+  'thutrang@ikame.vn': {
+    password: '123456',
+    user: {
+      id: 'u_new', name: 'Thu Trang', email: 'thutrang@ikame.vn',
+      role: 'new_employee', level: 1, exp: 0, maxExp: 1000, credits: 0,
+      avatar: 'https://picsum.photos/seed/thutrang/150/150',
+      department: 'Marketing', title: 'Content Creator (Fresher)',
+      phone: '0901234567', address: '123 Nguyễn Văn Linh, Q7, TP.HCM',
+      dob: '2000-08-20', startDate: new Date().toISOString().split('T')[0], online: true,
+      hasCompletedWelcomeTour: false,
+      hasReceivedOnboardingReward: false,
+    },
+  },
   'nva@ikame.vn': {
     password: '123456',
     user: {
       id: 'u1', name: 'Nguyễn Văn A', email: 'nva@ikame.vn',
-      role: 'new_employee', level: 5, exp: 2450, maxExp: 3000, credits: 150,
-      avatar: 'https://picsum.photos/seed/user1/150/150',
-      department: 'Engineering', title: 'Intern Developer',
-      phone: '0901234567', address: '123 Nguyễn Văn Linh, Q7, TP.HCM',
-      dob: '1995-08-20', startDate: '2026-02-15', online: true,
-    },
-  },
-  'emp@ikame.vn': {
-    password: '123456',
-    user: {
-      id: 'u2', name: 'Lê Văn C', email: 'emp@ikame.vn',
       role: 'employee', level: 15, exp: 12000, maxExp: 15000, credits: 850,
       avatar: 'https://picsum.photos/seed/user3/150/150',
       department: 'Engineering', title: 'Senior Developer',
       phone: '0908765432', address: '456 Cách Mạng Tháng 8, Q3, TP.HCM',
       dob: '1992-10-10', startDate: '2022-01-01', online: true,
+      hasCompletedWelcomeTour: true,
     },
   },
   'admin@ikame.vn': {
-    password: '123456',
+    password: 'admin123',
     user: {
       id: 'a1', name: 'Trần Thị B', email: 'admin@ikame.vn',
       role: 'admin', level: 25, exp: 45000, maxExp: 50000, credits: 2500,
@@ -151,9 +189,20 @@ export const MOCK_USERS: Record<string, { user: User; password: string }> = {
       department: 'Board', title: 'Administrator',
       phone: '0909876543', address: '456 Lê Lợi, Q1, TP.HCM',
       dob: '1990-05-12', startDate: '2019-07-01', online: true,
+      hasCompletedWelcomeTour: true,
+      hasCompletedAdminTour: false,
     },
   },
 };
+
+const INITIAL_REWARDS: Reward[] = [
+  { id: 1, title: 'Voucher Coffee Highlands', desc: '1 ly nước bất kỳ tại Highlands Coffee', cost: 50, icon: 'Coffee', gradient: 'from-amber-500 to-orange-600', tag: 'Hot', stock: 20, category: 'food' },
+  { id: 2, title: 'iKame Remote Day', desc: '1 ngày WFH extra (áp dụng T2-T6)', cost: 80, icon: 'Plane', gradient: 'from-brand-500 to-purple-600', tag: 'Premium', stock: 5, category: 'benefit' },
+  { id: 3, title: 'Grab Card 100K', desc: 'Thẻ Grab trị giá 100.000đ', cost: 120, icon: 'ShoppingBag', gradient: 'from-emerald-500 to-teal-600', tag: 'New', stock: 15, category: 'voucher' },
+  { id: 4, title: 'Book Voucher 200K', desc: 'Mua sách tại Fahasa/Tiki, trị giá 200K', cost: 150, icon: 'Star', gradient: 'from-rose-500 to-pink-600', tag: null, stock: 8, category: 'learning' },
+  { id: 5, title: 'Gaming Top-up 50K', desc: 'Nạp thẻ game bất kỳ 50.000đ', cost: 60, icon: 'Ticket', gradient: 'from-violet-500 to-purple-600', tag: 'Hot', stock: 30, category: 'entertainment' },
+  { id: 6, title: 'Thêm 1 ngày phép năm', desc: 'Thêm 1 ngày nghỉ phép năm (áp dụng trong quý)', cost: 300, icon: 'Gift', gradient: 'from-brand-600 to-blue-600', tag: 'Premium', stock: 3, category: 'benefit' },
+];
 
 const INITIAL_NOTIFICATIONS: Notification[] = [
   { id: 1, title: 'Phê duyệt nghỉ phép', message: 'Đơn xin nghỉ phép ngày 10/03 đã được duyệt.', time: '5 phút trước', read: false, type: 'approval', icon: '✅', link: '/icheck' },
@@ -209,7 +258,28 @@ export const useAuthStore = create<AuthState>()(
         const entry = MOCK_USERS[email.toLowerCase()];
         if (!entry) return { success: false, error: 'Email không tồn tại trong hệ thống.' };
         if (entry.password !== password) return { success: false, error: 'Mật khẩu không đúng.' };
+
         set({ currentUser: entry.user, isAuthenticated: true });
+
+        setTimeout(() => {
+          const appStore = useAppStore.getState();
+          if (entry.user.role === 'new_employee') {
+            useAppStore.setState({
+              quests: appStore.quests.map(q => ({ ...q, status: 'pending', progress: 0 })),
+              attendanceRecords: [],
+              todayCheckedIn: false,
+              todayCheckInTime: null
+            });
+          } else {
+            useAppStore.setState({
+              quests: appStore.quests.map(q =>
+                q.tabId === 'onboarding' ? { ...q, status: 'completed', progress: q.target } : q
+              ),
+              attendanceRecords: appStore.attendanceRecords.length === 0 ? buildInitialAttendance() : appStore.attendanceRecords
+            });
+          }
+        }, 0);
+
         return { success: true };
       },
 
@@ -225,11 +295,15 @@ export const useAuthStore = create<AuthState>()(
 );
 
 interface AppState {
+  // Users Management (Admin)
+  users: User[];
+  updateEmployee: (id: string, updates: Partial<User>) => void;
+
   // Gamification
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: number) => void;
-  addExp: (amount: number, reason: string) => void;
+  addExp: (amount: number, reason: string, silent?: boolean) => void;
   spendCredits: (amount: number) => boolean;
 
   // Notifications
@@ -261,6 +335,15 @@ interface AppState {
   quests: Quest[];
   submitQuestReport: (questId: number, title: string, desc: string) => void;
   approveQuest: (questId: number, approved: boolean) => void;
+  addQuest: (quest: Omit<Quest, 'id' | 'progress' | 'status'>) => void;
+  updateQuest: (id: number, updates: Partial<Quest>) => void;
+  deleteQuest: (id: number) => void;
+
+  // Rewards
+  rewards: Reward[];
+  addReward: (reward: Omit<Reward, 'id'>) => void;
+  updateReward: (id: number, updates: Partial<Reward>) => void;
+  deleteReward: (id: number) => void;
 
   // Celebrations
   celebrations: CelebrationItem[];
@@ -269,6 +352,7 @@ interface AppState {
   // Reward history
   rewardHistory: RewardHistory[];
   addRewardHistory: (item: Omit<RewardHistory, 'id' | 'date'>) => void;
+  updateRewardHistoryStatus: (id: string, status: RewardHistory['status']) => void;
 
   // Search
   searchQuery: string;
@@ -279,11 +363,24 @@ interface AppState {
   language: 'vi' | 'en';
   toggleTheme: () => void;
   setLanguage: (lang: 'vi' | 'en') => void;
+
+  // Global Actions
+  checkOnboardingCompletion: () => void;
+
+  // Posts / Announcements
+  posts: Post[];
+  addPost: (post: Omit<Post, 'id' | 'time' | 'likes' | 'comments' | 'isLiked'>) => void;
+  deletePost: (id: number) => void;
+  togglePinPost: (id: number) => void;
+  toggleLikePost: (id: number) => void;
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      users: Object.values(MOCK_USERS).map(u => u.user),
+      updateEmployee: (id, updates) => set(s => ({ users: s.users.map(u => u.id === id ? { ...u, ...updates } : u) })),
+
       toasts: [],
       addToast: (toast) => {
         const id = ++toastId;
@@ -293,7 +390,7 @@ export const useAppStore = create<AppState>()(
       },
       removeToast: (id) => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })),
 
-      addExp: (amount, reason) => {
+      addExp: (amount, reason, silent = false) => {
         const auth = useAuthStore.getState();
         if (!auth.currentUser) return;
         let { exp, maxExp, level, credits } = auth.currentUser;
@@ -306,7 +403,9 @@ export const useAppStore = create<AppState>()(
           get().addToast({ type: 'levelup', title: `🎉 Lên cấp ${level}!`, message: 'Nhận được 50 Credits thưởng!' });
         }
         auth.updateUser({ exp, maxExp, level, credits });
-        get().addToast({ type: 'exp', title: reason, message: `+${amount} EXP`, expAmount: amount });
+        if (!silent) {
+          get().addToast({ type: 'exp', title: reason, message: `+${amount} EXP`, expAmount: amount });
+        }
       },
 
       spendCredits: (amount) => {
@@ -412,32 +511,39 @@ export const useAppStore = create<AppState>()(
       },
 
       quests: [
-        { id: 1, title: 'iCheck trước 8:30', desc: 'Đi làm sớm mỗi ngày.', exp: 10, credits: 2, progress: 1, target: 1, status: 'completed', subCategory: 'Productivity', rarity: 'common', tabId: 'daily' },
+        { id: 1, title: 'iCheck trước 8:30', desc: 'Đi làm sớm mỗi ngày.', exp: 10, credits: 2, progress: 0, target: 1, status: 'pending', subCategory: 'Productivity', rarity: 'common', tabId: 'daily' },
         { id: 2, title: 'Hoàn thành 1 task', desc: 'Đóng ít nhất 1 task trên hệ thống.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Productivity', rarity: 'common', tabId: 'daily' },
-        { id: 3, title: 'Tương tác mạng nội bộ', desc: 'Like hoặc comment 3 bài viết.', exp: 15, credits: 3, progress: 1, target: 3, status: 'in-progress', subCategory: 'Social', rarity: 'common', tabId: 'daily' },
+        { id: 3, title: 'Tương tác mạng nội bộ', desc: 'Like hoặc comment 3 bài viết.', exp: 15, credits: 3, progress: 0, target: 3, status: 'pending', subCategory: 'Social', rarity: 'common', tabId: 'daily' },
         { id: 4, title: 'Viết báo cáo tuần', desc: 'Nộp báo cáo trước 17:00 thứ 6.', exp: 100, credits: 20, progress: 0, target: 1, status: 'pending', subCategory: 'Productivity', rarity: 'rare', tabId: 'weekly' },
-        { id: 5, title: 'Cập nhật iGoal', desc: 'Cập nhật tiến độ OKR ít nhất 1 lần.', exp: 50, credits: 10, progress: 1, target: 1, status: 'completed', subCategory: 'Goal', rarity: 'common', tabId: 'weekly' },
-        { id: 6, title: 'Review Code', desc: 'Review 5 Pull Requests của đồng nghiệp.', exp: 80, credits: 15, progress: 3, target: 5, status: 'in-progress', subCategory: 'Teamwork', rarity: 'rare', tabId: 'weekly' },
+        { id: 5, title: 'Cập nhật iGoal', desc: 'Cập nhật tiến độ OKR ít nhất 1 lần.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Goal', rarity: 'common', tabId: 'weekly' },
+        { id: 6, title: 'Review Code', desc: 'Review 5 Pull Requests của đồng nghiệp.', exp: 80, credits: 15, progress: 0, target: 5, status: 'pending', subCategory: 'Teamwork', rarity: 'rare', tabId: 'weekly' },
         { id: 7, title: 'Viết bài blog kỹ thuật', desc: 'Chia sẻ kiến thức chuyên môn.', exp: 300, credits: 60, progress: 0, target: 1, status: 'pending', subCategory: 'Knowledge', rarity: 'epic', tabId: 'monthly' },
-        { id: 8, title: 'Không đi muộn cả tháng', desc: 'Check-in đúng giờ 100%.', exp: 500, credits: 100, progress: 18, target: 22, status: 'in-progress', subCategory: 'Discipline', rarity: 'legendary', tabId: 'monthly' },
-        // Onboarding Quest Chain from iKame Onboarding Image
-        { id: 9, title: 'Day One Tour', desc: 'Tham gia buổi tour làm quen văn phòng ngày đầu tiên.', exp: 50, credits: 10, progress: 1, target: 1, status: 'completed', subCategory: 'Khởi đầu', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 10, title: 'First meeting with Manager', desc: 'Gặp gỡ và trao đổi định hướng với Quản lý trực tiếp.', exp: 100, credits: 20, progress: 1, target: 1, status: 'completed', subCategory: 'Kết nối', rarity: 'rare', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 11, title: 'Cập nhật Profile Google & Slack', desc: 'Thêm ảnh đại diện chuyên nghiệp cho tài khoản Google & Slack.', exp: 30, credits: 5, progress: 1, target: 1, status: 'completed', subCategory: 'Thiết lập', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 12, title: 'Đọc Cẩm nang Onboarding', desc: 'Tìm hiểu cẩm nang để trở thành một iKamer hiệu quả.', exp: 80, credits: 15, progress: 0, target: 1, status: 'pending', subCategory: 'Học hỏi', rarity: 'rare', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 13, title: 'Ký NDA & HĐTV', desc: 'Hoàn thành ký Thỏa thuận Bảo mật thông tin & Hợp đồng thử việc.', exp: 50, credits: 10, progress: 1, target: 1, status: 'completed', subCategory: 'Hồ sơ', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 14, title: 'Cung cấp giấy tờ Kế toán', desc: 'Nộp đầy đủ hồ sơ, giấy tờ cần thiết cho bộ phận Kế toán.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hồ sơ', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-08' },
-        { id: 15, title: 'Chấm công với iCheck', desc: 'Sign-in và thực hiện chấm công lần đầu với iCheck.', exp: 20, credits: 5, progress: 1, target: 1, status: 'completed', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 16, title: 'Sign-in Slack', desc: 'Đăng nhập vào không gian làm việc của team trên Slack.', exp: 20, credits: 5, progress: 1, target: 1, status: 'completed', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 17, title: 'Tham gia Group Facebook nội bộ', desc: 'Gia nhập group iKame Inc Group trên Facebook.', exp: 30, credits: 5, progress: 1, target: 1, status: 'completed', subCategory: 'Social', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 18, title: 'Kích hoạt 2FA Email', desc: 'Kích hoạt Xác thực 2 lớp bảo mật cho email công ty.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'rare', tabId: 'onboarding', deadline: '2026-03-05' },
-        { id: 19, title: 'Làm quen với Asana', desc: 'Sign-in Asana và tìm hiểu về Project Onboarding của bạn.', exp: 60, credits: 12, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 20, title: 'Khám phá iWiki', desc: 'Sign-in và tìm hiểu các chức năng tra cứu tài liệu trên iWiki.', exp: 40, credits: 8, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 21, title: 'Sử dụng iPerform', desc: 'Sign-in và tìm hiểu chức năng của hệ thống iPerform.', exp: 40, credits: 8, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01' },
-        { id: 22, title: 'Tìm hiểu iCloud', desc: 'Tìm hiểu về cách thức lưu trữ và chia sẻ file trên iCloud (Optional).', exp: 20, credits: 4, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-05' },
-        { id: 23, title: 'Tạo IT Support request', desc: 'Tìm hiểu cách tạo request hỗ trợ IT bằng Asana Form (Optional).', exp: 20, credits: 4, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-05' },
+        { id: 8, title: 'Không đi muộn cả tháng', desc: 'Check-in đúng giờ 100%.', exp: 500, credits: 100, progress: 0, target: 22, status: 'pending', subCategory: 'Discipline', rarity: 'legendary', tabId: 'monthly' },
+        // Onboarding Quest Chain
+        { id: 9, title: 'Day One Tour', desc: 'Tham gia buổi tour làm quen văn phòng ngày đầu tiên.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Khởi đầu', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Tham gia buổi tour đi quanh văn phòng cùng HR vào sáng ngày đầu tiên nhận việc.' },
+        { id: 10, title: 'First meeting with Manager', desc: 'Gặp gỡ và trao đổi định hướng với Quản lý trực tiếp.', exp: 100, credits: 20, progress: 0, target: 1, status: 'pending', subCategory: 'Kết nối', rarity: 'rare', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Đặt lịch 30 phút trao đổi trực tiếp với Quản lý (Team Leader/Manager) về JD và mục tiêu thử việc.' },
+        { id: 11, title: 'Cập nhật Profile Google & Slack', desc: 'Thêm ảnh đại diện chuyên nghiệp cho tài khoản Google & Slack.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Thiết lập', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Cập nhật avatar thật (nhìn rõ mặt) và điền đầy đủ thông tin Bio trên Slack và Google Account.' },
+        { id: 12, title: 'Đọc Cẩm nang Onboarding', desc: 'Tìm hiểu cẩm nang để trở thành một iKamer hiệu quả.', exp: 80, credits: 15, progress: 0, target: 1, status: 'pending', subCategory: 'Học hỏi', rarity: 'rare', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Truy cập iWiki và đọc hết tài liệu "Cẩm nang văn hóa iKame".' },
+        { id: 13, title: 'Ký NDA & HĐTV', desc: 'Hoàn thành ký Thỏa thuận Bảo mật thông tin & Hợp đồng thử việc.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hồ sơ', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Liên hệ BP Nhân sự để hoàn thành việc ký kết các giấy tờ pháp lý cần thiết.' },
+        { id: 14, title: 'Cung cấp giấy tờ Kế toán', desc: 'Nộp đầy đủ hồ sơ, giấy tờ cần thiết cho bộ phận Kế toán.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hồ sơ', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-08', howToComplete: 'Scan và gửi bộ hồ sơ kế toán (CMND, Sổ hộ khẩu, Bằng cấp...) lên thư mục Google Drive được chỉ định.' },
+        { id: 15, title: 'Chấm công với iCheck', desc: 'Sign-in và thực hiện chấm công lần đầu với iCheck.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Đăng nhập vào app iCheck bằng account iKame và thực hiện "Check-in" đầu tiên.' },
+        { id: 16, title: 'Sign-in Slack', desc: 'Đăng nhập vào không gian làm việc của team trên Slack.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Gia nhập Workspace iKame trên Slack và gửi tin nhắn "Chào cả nhà" vào channel #general.' },
+        { id: 17, title: 'Tham gia Group Facebook nội bộ', desc: 'Gia nhập group iKame Inc Group trên Facebook.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Social', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Gửi yêu cầu gia nhập Group Facebook iKame Inc và chờ Admin phê duyệt.' },
+        { id: 18, title: 'Kích hoạt 2FA Email', desc: 'Kích hoạt Xác thực 2 lớp bảo mật cho email công ty.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'rare', tabId: 'onboarding', deadline: '2026-03-05', howToComplete: 'Cài đặt bảo mật 2 lớp cho Google Account theo hướng dẫn của BP IT.' },
+        { id: 19, title: 'Làm quen với Asana', desc: 'Sign-in Asana và tìm hiểu về Project Onboarding của bạn.', exp: 60, credits: 12, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Đăng nhập Asana, tìm thấy Project "Onboarding - [Tên của bạn]" và xem danh sách các Task cần làm.' },
+        { id: 20, title: 'Khám phá iWiki', desc: 'Sign-in và tìm hiểu các chức năng tra cứu tài liệu trên iWiki.', exp: 40, credits: 8, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Đăng nhập iWiki và tìm hiểu cách tra cứu các quy trình phối hợp giữa các phòng ban.' },
+        { id: 21, title: 'Sử dụng iPerform', desc: 'Sign-in và tìm hiểu chức năng của hệ thống iPerform.', exp: 40, credits: 8, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Đăng nhập iPerform và làm quen với giao diện theo dõi KPI cá nhân.' },
+        { id: 22, title: 'Tìm hiểu iCloud', desc: 'Tìm hiểu về cách thức lưu trữ và chia sẻ file trên iCloud (Optional).', exp: 20, credits: 4, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-05', howToComplete: 'Tìm hiểu cấu trúc lưu trữ dữ liệu chung của công ty trên nền tảng Google Drive (iCloud iKame).' },
+        { id: 23, title: 'Tạo IT Support request', desc: 'Tìm hiểu cách tạo request hỗ trợ IT bằng Asana Form (Optional).', exp: 20, credits: 4, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-05', howToComplete: 'Biết cách sử dụng Form Asana để tạo yêu cầu hỗ trợ từ BP IT khi gặp sự cố máy móc/phần mềm.' },
       ],
       submitQuestReport: (questId, title, desc) => {
+        const quest = get().quests.find(q => q.id === questId);
+        if (quest?.tabId === 'onboarding') {
+          // Instant completion for onboarding
+          get().approveQuest(questId, true);
+          return;
+        }
+
         set(s => ({
           quests: s.quests.map(q => q.id === questId
             ? { ...q, status: 'submitted' as const }
@@ -459,10 +565,15 @@ export const useAppStore = create<AppState>()(
         if (approved) {
           const quest = get().quests.find(q => q.id === questId);
           if (quest) {
-            get().addExp(quest.exp, `iQuest: ${quest.title}`);
+            get().addExp(quest.exp, `iQuest: ${quest.title}`, true);
             const auth = useAuthStore.getState();
             auth.updateUser({ credits: (auth.currentUser?.credits || 0) + quest.credits });
             get().addToast({ type: 'success', title: `Quest hoàn thành: ${quest.title}`, message: `+${quest.exp} EXP · +${quest.credits} Credits` });
+
+            // Trigger check for onboarding completion
+            if (quest.tabId === 'onboarding') {
+              get().checkOnboardingCompletion();
+            }
           }
         } else {
           get().addToast({ type: 'warning', title: 'Báo cáo bị từ chối', message: 'Vui lòng kiểm tra lại và gửi lại.' });
@@ -490,10 +601,20 @@ export const useAppStore = create<AppState>()(
         }
       },
 
+      addQuest: (quest) => set(s => ({ quests: [...s.quests, { ...quest, id: Date.now(), progress: 0, status: 'pending' }] })),
+      updateQuest: (id, updates) => set(s => ({ quests: s.quests.map(q => q.id === id ? { ...q, ...updates } : q) })),
+      deleteQuest: (id) => set(s => ({ quests: s.quests.filter(q => q.id !== id) })),
+
+      rewards: INITIAL_REWARDS,
+      addReward: (reward) => set(s => ({ rewards: [...s.rewards, { ...reward, id: Date.now() }] })),
+      updateReward: (id, updates) => set(s => ({ rewards: s.rewards.map(r => r.id === id ? { ...r, ...updates } : r) })),
+      deleteReward: (id) => set(s => ({ rewards: s.rewards.filter(r => r.id !== id) })),
+
       rewardHistory: [],
       addRewardHistory: (item) => {
         set(s => ({ rewardHistory: [{ ...item, id: `rh-${Date.now()}`, date: new Date().toISOString().split('T')[0] }, ...s.rewardHistory] }));
       },
+      updateRewardHistoryStatus: (id, status) => set(s => ({ rewardHistory: s.rewardHistory.map(r => r.id === id ? { ...r, status } : r) })),
 
       searchQuery: '',
       setSearchQuery: (q) => set({ searchQuery: q }),
@@ -502,11 +623,60 @@ export const useAppStore = create<AppState>()(
       language: 'vi',
       toggleTheme: () => set(s => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
       setLanguage: (lang) => set({ language: lang }),
+
+      checkOnboardingCompletion: () => {
+        const { quests } = get();
+        const onboardingQuests = quests.filter(q => q.tabId === 'onboarding');
+        const completed = onboardingQuests.filter(q => q.status === 'completed').length;
+        const total = onboardingQuests.length;
+        const auth = useAuthStore.getState();
+
+        if (total > 0 && completed === total && !auth.currentUser?.hasReceivedOnboardingReward) {
+          // All done!
+          auth.updateUser({
+            level: Math.max(auth.currentUser?.level || 1, 2),
+            credits: (auth.currentUser?.credits || 0) + 100,
+            hasReceivedOnboardingReward: true
+          });
+          get().addToast({ type: 'levelup', title: '🎁 Quà tân thủ!', message: 'Chúc mừng bạn đã hoàn thành Onboarding!' });
+        }
+      },
+
+      posts: [
+        {
+          id: 101,
+          author: { name: 'iKame AI Assistant', avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png', title: 'Hệ thống tự động' },
+          content: '🎊 Chúc mừng **Nguyễn Việt Dũng** đã chính thức hoàn thành chuỗi thử thách Onboarding! \n\nDũng hiện đang là PM tại team Platform. Hãy ghé qua Profile để gửi lời chào và làm quen với đồng nghiệp mới nhé! 🚀',
+          time: '10 phút trước', likes: 45, comments: 12, isLiked: false, type: 'ai_update',
+          badge: 'Onboarding Completed',
+          featuredUser: { name: 'Nguyễn Việt Dũng', title: 'Project Manager', avatar: 'https://picsum.photos/seed/dung/150/150' }
+        },
+        {
+          id: 1,
+          author: { name: 'HR Department', avatar: 'https://picsum.photos/seed/hr/150/150', title: 'Human Resources' },
+          content: '🎉 Chúc mừng team Tech đã hoàn thành xuất sắc dự án Alpha trước thời hạn 2 tuần! Chiều nay có tiệc trà tại pantry nhé!',
+          image: 'https://picsum.photos/seed/party/800/400',
+          time: '2 giờ trước', likes: 24, comments: 5, isLiked: false, type: 'announcement',
+          isPinned: true
+        },
+        {
+          id: 102,
+          author: { name: 'iKame AI Assistant', avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png', title: 'Hệ thống tự động' },
+          content: '🔥 **Lê Văn C** vừa lập kỷ lục mới: Hoàn thành toàn bộ chuỗi nhiệm vụ Hàng tháng (Monthly Quest) chỉ trong 15 ngày! +500 Credits đã được cộng vào ví. Quá đỉnh! 💎',
+          time: '3 giờ trước', likes: 18, comments: 3, isLiked: false, type: 'ai_update',
+          badge: 'Monthly Achievement'
+        }
+      ],
+      addPost: (p) => set(s => ({ posts: [{ ...p, id: Date.now(), time: 'Vừa xong', likes: 0, comments: 0, isLiked: false }, ...s.posts] })),
+      deletePost: (id) => set(s => ({ posts: s.posts.filter(p => p.id !== id) })),
+      togglePinPost: (id) => set(s => ({ posts: s.posts.map(p => p.id === id ? { ...p, isPinned: !p.isPinned } : p) })),
+      toggleLikePost: (id) => set(s => ({ posts: s.posts.map(p => p.id === id ? { ...p, likes: p.isLiked ? p.likes - 1 : p.likes + 1, isLiked: !p.isLiked } : p) })),
     }),
     {
       name: 'ikame-app',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
+        users: s.users,
         attendanceRecords: s.attendanceRecords,
         todayCheckedIn: s.todayCheckedIn,
         todayCheckInTime: s.todayCheckInTime,
@@ -514,6 +684,7 @@ export const useAppStore = create<AppState>()(
         okrs: s.okrs,
         quests: s.quests,
         celebrations: s.celebrations,
+        rewards: s.rewards,
         rewardHistory: s.rewardHistory,
         notifications: s.notifications,
         theme: s.theme,

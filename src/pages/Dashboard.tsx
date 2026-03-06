@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { useAuthStore, useAppStore } from '../store';
-import { Trophy, Star, TrendingUp, Clock, Heart, MessageCircle, Share2, Image as ImageIcon, Smile, Send, Calendar, Award, MoreHorizontal, Zap, ArrowUpRight, Coins, Flame, Sparkles, ChevronRight, CheckCircle2, Users, Cake, Medal, PartyPopper } from 'lucide-react';
+import { Trophy, Star, TrendingUp, Clock, Heart, MessageCircle, Share2, Image as ImageIcon, Smile, Send, Calendar, Award, MoreHorizontal, Zap, ArrowUpRight, Coins, Flame, Sparkles, ChevronRight, CheckCircle2, Users, Cake, Medal, PartyPopper, Rocket } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils';
+import { Modal } from '../components/UI';
 
 export const Dashboard = () => {
   const { currentUser } = useAuthStore();
-  const { addExp, addToast, checkIn, todayCheckedIn, celebrations, sendWish, quests } = useAppStore();
+  const { addExp, addToast, checkIn, todayCheckedIn, celebrations, sendWish, quests, attendanceRecords, posts, addPost, toggleLikePost } = useAppStore();
   const [newPostContent, setNewPostContent] = useState('');
   const [leaderboardTab, setLeaderboardTab] = useState<'weekly' | 'monthly'>('weekly');
+
+  const [showKudosModal, setShowKudosModal] = useState(false);
+  const [kudosRecipient, setKudosRecipient] = useState('');
+  const [kudosMessage, setKudosMessage] = useState('');
 
   const isNewEmployee = currentUser?.role === 'new_employee';
 
@@ -35,41 +40,42 @@ export const Dashboard = () => {
   const leaderboard = leaderboardData[leaderboardTab];
   const medals = ['🥇', '🥈', '🥉', '4', '5'];
 
-  const [posts, setPosts] = useState([
-    {
-      id: 101,
-      author: { name: 'iKame AI Assistant', avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png', title: 'Hệ thống tự động' },
-      content: '🎊 Chúc mừng **Nguyễn Việt Dũng** đã chính thức hoàn thành chuỗi thử thách Onboarding! \n\nDũng hiện đang là PM tại team Platform. Hãy ghé qua Profile để gửi lời chào và làm quen với đồng nghiệp mới nhé! 🚀',
-      time: '10 phút trước', likes: 45, comments: 12, isLiked: false, type: 'ai_update',
-      badge: 'Onboarding Completed',
-      featuredUser: { name: 'Nguyễn Việt Dũng', title: 'Project Manager', avatar: 'https://picsum.photos/seed/dung/150/150' }
-    },
-    { id: 1, author: { name: 'HR Department', avatar: 'https://picsum.photos/seed/hr/150/150', title: 'Human Resources' }, content: '🎉 Chúc mừng team Tech đã hoàn thành xuất sắc dự án Alpha trước thời hạn 2 tuần! Chiều nay có tiệc trà tại pantry nhé!', image: 'https://picsum.photos/seed/party/800/400', time: '2 giờ trước', likes: 24, comments: 5, isLiked: false, type: 'announcement' },
-    {
-      id: 102,
-      author: { name: 'iKame AI Assistant', avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png', title: 'Hệ thống tự động' },
-      content: '🔥 **Lê Văn C** vừa lập kỷ lục mới: Hoàn thành toàn bộ chuỗi nhiệm vụ Hàng tháng (Monthly Quest) chỉ trong 15 ngày! +500 Credits đã được cộng vào ví. Quá đỉnh! 💎',
-      time: '3 giờ trước', likes: 18, comments: 3, isLiked: false, type: 'ai_update',
-      badge: 'Monthly Achievement'
-    },
-    { id: 2, author: { name: 'Trần Thị B', avatar: 'https://picsum.photos/seed/manager1/150/150', title: 'Engineering Manager' }, content: 'Vừa hoàn thành buổi Seminar React Performance cho các bạn Fresher. Rất vui vì mọi người đã tham gia nhiệt tình! 🚀', time: '4 giờ trước', likes: 15, comments: 2, isLiked: true, type: 'achievement', expEarned: 500 },
-    {
-      id: 103,
-      author: { name: 'iKame Events', avatar: 'https://cdn-icons-png.flaticon.com/512/2907/2907253.png', title: 'Sự kiện nội bộ' },
-      content: '📅 **Reminder**: Giải bóng đá iKame Cup 2026 sẽ chính thức khai mạc vào thứ 7 tuần này tại sân vận động H2. Mọi người đừng quên đến cổ vũ cho đội nhà nhé! ⚽',
-      time: '6 giờ trước', likes: 56, comments: 20, isLiked: false, type: 'event'
-    },
-    { id: 3, author: { name: 'Lê Văn C', avatar: 'https://picsum.photos/seed/user3/150/150', title: 'Backend Developer' }, content: 'Đã fix xong con bug critical ám ảnh suốt 3 ngày qua. Cảm giác thật tuyệt vời! 💻✨', time: 'Hôm qua', likes: 32, comments: 8, isLiked: false, type: 'update' },
-  ]);
-
   const [wishInputs, setWishInputs] = useState<Record<number, string>>({});
 
-  const handleLike = (id: number) => setPosts(posts.map(p => p.id === id ? { ...p, likes: p.isLiked ? p.likes - 1 : p.likes + 1, isLiked: !p.isLiked } : p));
+  const sortedPosts = [...posts].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return 0;
+  });
+
+  const handleLike = (id: number) => toggleLikePost(id);
   const handlePost = () => {
     if (!newPostContent.trim()) return;
-    setPosts([{ id: Date.now(), author: { name: currentUser?.name || '', avatar: currentUser?.avatar || '', title: currentUser?.title || '' }, content: newPostContent, time: 'Vừa xong', likes: 0, comments: 0, isLiked: false, type: 'update' }, ...posts]);
+    addPost({
+      author: { name: currentUser?.name || '', avatar: currentUser?.avatar || '', title: currentUser?.title || '' },
+      content: newPostContent,
+      type: 'update'
+    });
     setNewPostContent('');
     addExp(5, 'Đăng bài viết mới');
+  };
+
+  const handleSendKudos = () => {
+    if (!kudosRecipient.trim() || !kudosMessage.trim()) return;
+
+    addPost({
+      author: { name: currentUser?.name || '', avatar: currentUser?.avatar || '', title: currentUser?.title || '' },
+      content: `Thật tuyệt vời, vinh danh **${kudosRecipient}**! \n\n${kudosMessage}`,
+      type: 'kudos',
+      badge: 'Kudos Sent'
+    });
+
+    addToast({ type: 'success', title: 'Đã gửi Kudos!', message: `Bạn đã gửi lời cảm ơn tới ${kudosRecipient}` });
+    addExp(10, 'Gửi Kudos cho đồng nghiệp');
+
+    setShowKudosModal(false);
+    setKudosRecipient('');
+    setKudosMessage('');
   };
 
   const handleSendCustomWish = (celebrationId: number) => {
@@ -94,8 +100,18 @@ export const Dashboard = () => {
   const totalOnboarding = onboardingQuests.length;
   const onboardingPercent = totalOnboarding > 0 ? Math.round((completedOnboarding / totalOnboarding) * 100) : 0;
 
+  const computeStreak = () => {
+    let streak = 0;
+    for (let i = 0; i < attendanceRecords.length; i++) {
+      const r = attendanceRecords[i];
+      if (r.status === 'on_time' || r.status === 'late') streak++;
+      else if (r.status !== 'holiday' && r.status !== 'wfh' && r.status !== 'ot') break;
+    }
+    return streak;
+  };
+
   const statCards = [
-    { label: 'Streak Check-in', value: '7 ngày', sub: 'Liên tục', icon: Flame, gradient: 'from-orange-500 to-amber-600' },
+    { label: 'Streak Check-in', value: `${computeStreak()} ngày`, sub: 'Liên tục', icon: Flame, gradient: 'from-orange-500 to-amber-600' },
     { label: 'Credits', value: currentUser?.credits?.toString() || '0', sub: 'iKame Coin', icon: Coins, gradient: 'from-amber-500 to-orange-600' },
     { label: 'Level', value: `Lv. ${currentUser?.level || 1}`, sub: `${currentUser?.exp || 0}/${currentUser?.maxExp || 1000} XP`, icon: Star, gradient: 'from-emerald-500 to-teal-600' },
     { label: 'Quest Progress', value: `${quests.filter(q => q.status === 'completed').length}/${quests.length}`, sub: 'Nhiệm vụ', icon: Award, gradient: 'from-brand-500 to-orange-600' },
@@ -202,8 +218,46 @@ export const Dashboard = () => {
 
         {/* Feed */}
         <div className="lg:col-span-6 space-y-5">
+          {/* New Employee Onboarding Guide in Feed */}
+          {isNewEmployee && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-brand-50 border border-brand-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-sm">
+                    <Rocket className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-slate-900">Bắt đầu hành trình iKame! 🚀</h3>
+                    <p className="text-xs text-brand-600 font-medium mt-0.5">Nhiệm vụ Onboarding dành riêng cho bạn</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed mb-4">
+                  Chào mừng bạn gia nhập! Dưới đây là các bước tiếp theo để bạn làm quen với đồng nghiệp và hệ thống. Thực hiện ngay để tích lũy EXP nhé.
+                </p>
+                <div className="space-y-2 mb-4">
+                  {onboardingQuests.slice(0, 3).map(q => (
+                    <div key={q.id} className="bg-white p-3 rounded-xl border border-brand-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className={cn("w-5 h-5 flex-shrink-0", q.status === 'completed' ? 'text-emerald-500' : 'text-slate-300')} />
+                        <div>
+                          <p className={cn("text-sm font-bold", q.status === 'completed' ? 'text-slate-500 line-through' : 'text-slate-900')}>{q.title}</p>
+                          <p className="text-xs text-slate-500">{q.desc}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 whitespace-nowrap">+{q.exp} EXP</span>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => window.location.href = '/iquest'} className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-brand-600 text-white font-bold text-sm rounded-xl hover:bg-brand-700 transition active:scale-95">
+                  <Award className="w-4 h-4" /> Tham gia iQuest để xem chi tiết
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Birthday Section */}
-          {birthdayCelebrations.length > 0 && (
+          {!isNewEmployee && birthdayCelebrations.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
@@ -249,7 +303,7 @@ export const Dashboard = () => {
           )}
 
           {/* Anniversary Section */}
-          {anniversaryCelebrations.length > 0 && (
+          {!isNewEmployee && anniversaryCelebrations.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
               className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
@@ -307,6 +361,9 @@ export const Dashboard = () => {
                   <div className="flex gap-1">
                     <button className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"><ImageIcon className="w-4 h-4" /></button>
                     <button className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"><Smile className="w-4 h-4" /></button>
+                    <button onClick={() => setShowKudosModal(true)} className="flex items-center gap-1 p-2 text-amber-500 hover:bg-amber-50 rounded-lg text-xs font-bold transition-colors ml-2">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Gửi Kudos
+                    </button>
                   </div>
                   <button onClick={handlePost} disabled={!newPostContent.trim()} className="flex items-center gap-2 px-5 py-2 bg-brand-600 text-white rounded-xl font-bold text-sm hover:bg-brand-700 transition-colors disabled:opacity-40 active:scale-95">
                     <Send className="w-4 h-4" /> Đăng
@@ -316,9 +373,14 @@ export const Dashboard = () => {
             </div>
           </motion.div>
 
-          {posts.map((post, idx) => (
+          {sortedPosts.map((post, idx) => (
             <motion.div key={post.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
-              className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm card-hover">
+              className={cn("bg-white rounded-2xl p-5 border shadow-sm card-hover relative", post.isPinned ? "border-brand-300 ring-2 ring-brand-500/10" : "border-slate-200/60")}>
+              {post.isPinned && (
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 bg-brand-50 text-brand-600 rounded-lg text-[10px] font-black uppercase tracking-wider border border-brand-100">
+                  <TrendingUp className="w-3 h-3" /> Được ghim
+                </div>
+              )}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <img src={post.author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
@@ -406,9 +468,11 @@ export const Dashboard = () => {
                   </div>
                 ))}
               </div>
-              <a href="/iquest" className="mt-3 flex items-center justify-center gap-1.5 text-brand-600 text-xs font-bold hover:text-brand-700 transition-colors">
-                Xem tất cả <ChevronRight className="w-3 h-3" />
-              </a>
+              <div className="mt-4 flex flex-col gap-2">
+                <a href="/iquest" className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition-colors shadow-brand active:scale-95">
+                  Làm nhiệm vụ tiếp <ChevronRight className="w-4 h-4" />
+                </a>
+              </div>
             </motion.div>
           )}
 
@@ -450,6 +514,21 @@ export const Dashboard = () => {
           </motion.div>
         </div>
       </div>
+
+      <Modal isOpen={showKudosModal} onClose={() => setShowKudosModal(false)} title="Vinh danh & Ghi nhận" size="md">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Đồng nghiệp</label>
+            <input value={kudosRecipient} onChange={e => setKudosRecipient(e.target.value)} placeholder="Tên đồng nghiệp..." className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Lời cảm ơn</label>
+            <textarea value={kudosMessage} onChange={e => setKudosMessage(e.target.value)} placeholder="Chia sẻ lý do bạn biết ơn họ..." className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 resize-none h-24" />
+          </div>
+          <button onClick={handleSendKudos} disabled={!kudosRecipient.trim() || !kudosMessage.trim()} className="w-full py-2.5 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 disabled:opacity-50">Gửi Kudos</button>
+        </div>
+      </Modal>
+
     </div>
   );
 };

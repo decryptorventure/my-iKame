@@ -1,0 +1,100 @@
+My iKame - Nền tảng Trải nghiệm Nhân sự Toàn diện
+
+
+1. Tổng quan & Tầm nhìn Chiến lược (Overview & Strategic Vision)
+1.1. Mục đích tài liệu
+Tài liệu này mô tả các yêu cầu, lộ trình và tầm nhìn chiến lược cho việc phát triển ứng dụng My iKame, với mục tiêu biến nó từ một ứng dụng hỗ trợ trở thành một cổng thông tin duy nhất (Single-portal) tích hợp toàn bộ hệ sinh thái ứng dụng(iCheck, iWiki, iGoal,...) của iKame, tối ưu hóa toàn bộ vòng đời trải nghiệm của nhân sự.
+1.2. Bối cảnh & Vấn đề
+iKame đang sử dụng nhiều hệ thống phân mảnh (iCheck, iGoal, iWiki, HRIS,...) dẫn đến:
+Trải nghiệm rời rạc: Nhân sự phải đăng nhập và chuyển đổi giữa nhiều ứng dụng, gây khó khăn và giảm hiệu suất.
+Tỷ lệ sử dụng thấp: Người dùng thiếu các động lực cần thiết để vào app và sử dụng các chức năng. Các hệ thống quan trọng như iWiki, iGoal chưa được tận dụng tối đa.
+Lãng phí tiềm năng: Dữ liệu từ các hệ thống không được kết nối để tạo ra một cái nhìn toàn cảnh về nhân viên, bỏ lỡ cơ hội can thiệp và hỗ trợ kịp thời.
+1.3. Tầm nhìn Sản phẩm
+My iKame sẽ trở thành một cổng thông tin duy nhất, ứng dụng Gamification (trò chơi hóa) và Trí tuệ nhân tạo (AI) để kiến tạo một hành trình trải nghiệm liền mạch, hấp dẫn và được cá nhân hóa cho mỗi nhân viên, từ ngày đầu gia nhập cho đến ngày kết thúc công việc tại iKame.
+1.4. Mục tiêu Tổ chức
+Tăng tỷ lệ sử dụng (Adoption): Đưa 100% nhân sự lên một nền tảng duy nhất, tăng mức độ tương tác với các công cụ và quy trình của công ty.
+Tối ưu hóa trải nghiệm nhân sự: Giảm thiểu các thao tác thủ công, giúp nhân viên dễ dàng tiếp cận thông tin và công cụ, nâng cao sự hài lòng và gắn kết.
+Xây dựng văn hóa dựa trên dữ liệu: Cung cấp cho Ban Lãnh đạo và phòng P&OD những phân tích sâu sắc về mức độ gắn kết, tinh thần làm việc và nhu cầu phát triển của nhân viên.
+
+2. Lộ trình Phát triển Chi tiết (Detailed Roadmap)
+Lộ trình được chia thành bốn giai đoạn chính, đảm bảo tính khả thi, dễ đo lường và mang lại giá trị gia tăng sau mỗi giai đoạn.
+Giai Đoạn 1: The Foundation
+Mục tiêu chính: Xây dựng nền tảng vững chắc, ra mắt phiên bản sản phẩm khả dụng tối thiểu (MVP) để giải quyết các vấn đề cấp bách nhất là onboarding và kết nối, đồng thời thu thập dữ liệu người dùng ban đầu. => Cá nhân hoá(focus)
+
+2.1. Yêu cầu Chức năng & Kỹ thuật:
+Onboarding Journey (Hành trình Tân thủ):
+Hiển thị bản đồ hành trình on-boarding cho nhân viên mới.
+Tích hợp iQuest với các nhiệm vụ cụ thể: cập nhật thông tin, đọc sổ tay văn hóa, truy cập thử các ứng dụng khác,..
+Cơ chế thưởng EXP, iKame Coin và huy hiệu khi hoàn thành nhiệm vụ.
+App Hub & Single Sign-On (SSO):
+Đảm bảo đăng nhập một lần vào My iKame web và app
+Khi truy cập iCheck, iGoal, iWiki,...từ My iKame, người dùng được tự động đăng nhập.
+Culture & Communication (Văn hóa & Truyền thông):
+Ra mắt Newsfeed hiển thị tin tức từ P&OD và AI Agent, thông báo sinh nhật, kỷ niệm ngày làm việc.
+Triển khai tính năng Kudos (Vinh danh & Ghi nhận), cho phép nhân viên gửi lời cảm ơn công khai đến đồng nghiệp, người nhận được thưởng EXP/Coin.
+Gamification Engine (Hệ thống Động lực học):
+Hoàn thiện hệ thống Cấp độ (Level), Điểm kinh nghiệm (EXP), iKame Coin.
+Xây dựng Bảng xếp hạng (Leaderboard) và Cửa hàng đổi thưởng (iReward) với các vật phẩm phi tiền mặt.
+Data Warehouse & HRIS Integration (Kho dữ liệu & Tích hợp Nhân sự):
+Thiết lập kho dữ liệu để lưu trữ hành vi người dùng.
+Đồng bộ hóa chặt chẽ thông tin nhân sự (chức vụ, phòng ban, ngày vào làm) để tự động phân loại người dùng (mới/cũ).
+2.2. Chỉ số Đo lường Thành công (KPIs): think về tập trung vào những yêu tố gì
+100% nhân sự mới hoàn thành Onboarding qua app.
+>90% nhân sự toàn công ty cài đặt và có ít nhất 1 tương tác/tháng.
+>80% nhân sự hài lòng với bản cập nhật mới của My iKame.
+
+Giai Đoạn 2: Tích hợp Sâu & Cá nhân hóa - "The Enrichment"
+Mục tiêu chính: Làm giàu trải nghiệm, tích hợp sâu hơn vào công việc hàng ngày của nhân viên và bắt đầu ứng dụng AI ở mức độ cơ bản để tăng tính cá nhân hóa.
+2.3. Yêu cầu Chức năng & Kỹ thuật:
+Gamification Nâng cao:
+Tạo các tuyến nhiệm vụ hàng ngày/tháng(viết bài trên iwiki, check-in iGoal, tổ chức đào tạo nội bộ,..), cuộc thi theo Nhóm/Phòng ban
+Phát hành các Huy hiệu chuyên sâu cho người dùng
+Tích hợp HRIS (Cấp độ 2):
+Cho phép nhân sự tự xem các thông tin hồ sơ cá nhân
+Tự động hóa thông báo và thưởng Coin cho các cột mốc quan trọng (qua thử việc, kỷ niệm 1/3/5 năm làm việc).
+Ứng dụng AI (Cấp độ 1 - Gợi ý):
+Gợi ý nội dung: Dựa trên vai trò và phòng ban, gợi ý các bài viết iWiki hoặc khóa học nội bộ phù hợp trên Newsfeed.
+Gợi ý kết nối: Gợi ý các đồng nghiệp "nên làm quen" dựa trên cùng dự án (dữ liệu từ iGoal) hoặc cùng sở thích (khai báo trong profile).
+2.4. Chỉ số Đo lường Thành công (KPIs):
+Tỷ lệ người dùng hoạt động hàng tháng (Monthly Active Users) >95%.
+Giảm 20% các câu hỏi cơ bản gửi đến phòng Nhân sự (về ngày phép, phiếu lương).
+Tỷ lệ nhấp (CTR) vào các nội dung được AI gợi ý >15%.
+
+Giai Đoạn 3: Trợ lý Ảo & Tối ưu hóa Hiệu suất - "The Intelligence"
+Mục tiêu chính: Biến My iKame thành một trợ lý thông minh thực thụ, hỗ trợ nhân viên làm việc hiệu quả hơn và cung cấp cho P&OD những phân tích sâu sắc về tổ chức.
+2.5. Yêu cầu Chức năng & Kỹ thuật:
+AI Chatbot - "iKame Mate":
+Tích hợp chatbot có khả năng trả lời 24/7 các câu hỏi về chính sách, quy trình, thông tin nội bộ.
+Cho phép chatbot hỗ trợ thực hiện các tác vụ đơn giản (VD: "Tạo giúp tôi yêu cầu mua văn phòng phẩm").
+AI Phân tích & Cảnh báo:
+Phân tích cảm xúc (Sentiment Analysis): Dùng AI để phân tích sắc thái của các tin nhắn Kudos và bình luận, đo lường tinh thần nhân viên theo thời gian thực và cảnh báo khi có xu hướng tiêu cực.
+Cảnh báo "Tụt hậu" (Disengagement Alert): Hệ thống gửi cảnh báo riêng cho quản lý khi nhận thấy một thành viên trong nhóm có dấu hiệu thiếu gắn kết (ít tương tác, không hoàn thành nhiệm vụ phát triển bản thân).
+Tích hợp iGoal & Lộ trình Phát triển:
+Hiển thị tiến độ OKRs/iGoal cá nhân ngay trên profile My iKame.
+Tự động thưởng EXP/Coin khi hoàn thành một mục tiêu quan trọng trong iGoal.
+Tích hợp iGrow:
+Hiển thị thông tin career path tại iKame
+Đề xuất các khóa học, nội dung cho các vị trí mới ở công ty
+
+2.6. Chỉ số Đo lường Thành công (KPIs):
+>70% các câu hỏi lặp đi lặp lại được xử lý bởi Chatbot.
+P&OD sử dụng Báo cáo Phân tích Cảm xúc hàng tháng để đưa ra các chương trình cải thiện môi trường làm việc.
+>80% nhân sự xác nhận My iKame giúp họ theo dõi mục tiêu và phát triển bản thân tốt hơn (thông qua khảo sát).
+
+Giai Đoạn 4: Hoàn thiện Vòng đời Nhân sự - "The Full Lifecycle"
+Mục tiêu chính: Hoàn thiện trải nghiệm từ lúc gia nhập đến cả khi rời đi, hỗ trợ phát triển sự nghiệp và đảm bảo một quy trình off-boarding chuyên nghiệp.
+2.7. Yêu cầu Chức năng & Kỹ thuật:
+Internal Mobility (Phát triển nội bộ):
+Tích hợp mục "Cơ hội Nội bộ", nơi nhân viên có thể thấy các vị trí, cơ hội, bài toán đang cần nhân sự trong công ty.
+AI gợi ý các vị trí phù hợp với kỹ năng và kinh nghiệm của họ, khuyến khích sự phát triển bên trong tổ chức.
+Off-boarding Journey (Hành trình Bàn giao):
+Khi một nhân sự nghỉ việc, tài khoản My iKame chuyển sang chế độ "Off-boarding".
+Cung cấp một checklist các việc cần bàn giao (thiết bị, tài liệu, tài khoản) thay vì giấy tờ thủ công.
+Tích hợp link đến khảo sát nghỉ việc (Exit Interview), tặng một phần quà chia tay khi hoàn thành để thu thập phản hồi giá trị.
+2.8. Chỉ số Đo lường Thành công (KPIs):
+Tăng tỷ lệ ứng tuyển nội bộ lên 20%.
+100% nhân sự nghỉ việc hoàn thành quy trình off-boarding trên ứng dụng.
+Tỷ lệ hoàn thành khảo sát nghỉ việc đạt >95%.
+
+3. Tổng kết Lộ trình & Đề xuất
+Bằng việc thực hiện lộ trình này, My iKame không chỉ là một ứng dụng nội bộ mà sẽ trở thành một tài sản chiến lược của công ty. Nó giúp chúng ta xây dựng một môi trường làm việc hiện đại, hấp dẫn, giữ chân nhân tài và tối ưu hóa hiệu suất hoạt động.

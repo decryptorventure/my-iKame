@@ -26,13 +26,13 @@ export const Login = () => {
     };
 
     const fillDemo = (role: 'new_employee' | 'employee' | 'admin') => {
-        const emails = {
-            'new_employee': 'nva@ikame.vn',
-            'employee': 'emp@ikame.vn',
-            'admin': 'admin@ikame.vn'
+        const accounts = {
+            'new_employee': { email: 'thutrang@ikame.vn', pass: '123456' },
+            'employee': { email: 'nva@ikame.vn', pass: '123456' },
+            'admin': { email: 'admin@ikame.vn', pass: 'admin123' }
         };
-        setEmail(emails[role]);
-        setPassword('123456');
+        setEmail(accounts[role].email);
+        setPassword(accounts[role].pass);
         setError('');
     };
 

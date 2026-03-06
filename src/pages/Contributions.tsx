@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore, useAppStore } from '../store';
-import { Star, CheckCircle2, ArrowRight, Plus, Clock, Trophy, Gift, Target, PlayCircle, Zap, Users, Flame, Crown, Gem, AlertCircle, GraduationCap, Calendar, Lock } from 'lucide-react';
+import { Star, CheckCircle2, ArrowRight, Plus, Clock, Trophy, Gift, Target, PlayCircle, Zap, Users, Flame, Crown, Gem, AlertCircle, GraduationCap, Calendar, Lock, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader, Modal, Field, inputClass, StatusBadge, EmptyState } from '../components/UI';
 import { cn } from '../utils';
@@ -33,6 +33,11 @@ export const Contributions = () => {
   const [reportTitle, setReportTitle] = useState('');
   const [reportDesc, setReportDesc] = useState('');
   const [showIntro, setShowIntro] = useState(true);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showRewardModal, setShowRewardModal] = useState(false);
+  const [viewingQuest, setViewingQuest] = useState<typeof quests[0] | null>(null);
+
+
 
   const isManager = currentUser?.role === 'manager' || currentUser?.role === 'admin';
   const filtered = quests.filter(q => q.tabId === activeTab);
@@ -42,14 +47,30 @@ export const Contributions = () => {
   const milestoneTarget = quests.length;
   const completedEXP = quests.filter(q => q.status === 'completed').reduce((a, q) => a + q.exp, 0);
 
-  // Onboarding progress
   const onboardingQuests = quests.filter(q => q.tabId === 'onboarding');
   const completedOnboarding = onboardingQuests.filter(q => q.status === 'completed').length;
   const totalOnboarding = onboardingQuests.length;
   const onboardingPercent = totalOnboarding > 0 ? Math.round((completedOnboarding / totalOnboarding) * 100) : 0;
   const allOnboardingDone = completedOnboarding === totalOnboarding && totalOnboarding > 0;
 
+  // Auto-show reward modal when all onboarding done
+  React.useEffect(() => {
+    if (activeTab === 'onboarding' && allOnboardingDone && currentUser?.hasReceivedOnboardingReward && !showRewardModal) {
+      // We check if rewards were just given (logic in store happened)
+      // For this mock, we can trigger it once
+      const shown = localStorage.getItem('ikame_onboarding_reward_shown');
+      if (!shown) {
+        setShowRewardModal(true);
+        localStorage.setItem('ikame_onboarding_reward_shown', 'true');
+      }
+    }
+  }, [allOnboardingDone, currentUser?.hasReceivedOnboardingReward, activeTab]);
+
   const handleOpenSubmit = (quest: typeof quests[0]) => {
+    if (quest.tabId === 'onboarding') {
+      submitQuestReport(quest.id, quest.title, 'Hoàn thành onboarding');
+      return;
+    }
     setSelectedQuest(quest);
     setReportTitle(quest.title);
     setReportDesc('');
@@ -112,15 +133,27 @@ export const Contributions = () => {
               <Trophy className="w-5 h-5 text-amber-300" />
               <span className="font-bold text-white/90 text-sm">Milestone tiến độ</span>
             </div>
-            <p className="text-2xl font-extrabold">{completedCount} / {milestoneTarget} quests</p>
-            <p className="text-brand-100 text-xs mt-0.5">Hoàn thành tất cả để nhận 500 Credits bonus!</p>
+            {activeTab === 'onboarding' ? (
+              <>
+                <p className="text-2xl font-extrabold">{completedOnboarding} / {totalOnboarding} nhiệm vụ tân thủ</p>
+                <p className="text-brand-100 text-xs mt-0.5">Hoàn thành tất cả để nhận bộ quà tặng iKame!</p>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl font-extrabold">{completedCount} / {milestoneTarget} quests</p>
+                <p className="text-brand-100 text-xs mt-0.5">Hoàn thành tất cả để nhận bonus lớn!</p>
+              </>
+            )}
           </div>
           <div className="flex-1 max-w-xs">
             <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${(completedCount / milestoneTarget) * 100}%` }}
+              <motion.div initial={{ width: 0 }}
+                animate={{ width: `${activeTab === 'onboarding' ? onboardingPercent : (milestoneTarget > 0 ? (completedCount / milestoneTarget) * 100 : 0)}%` }}
                 transition={{ duration: 1.5 }} className="h-full bg-white rounded-full shadow-sm" />
             </div>
-            <p className="text-right text-brand-100 text-xs mt-1 font-bold">{Math.round((completedCount / milestoneTarget) * 100)}%</p>
+            <p className="text-right text-brand-100 text-xs mt-1 font-bold">
+              {activeTab === 'onboarding' ? onboardingPercent : Math.round(milestoneTarget > 0 ? (completedCount / milestoneTarget) * 100 : 0)}%
+            </p>
           </div>
         </div>
       </motion.div>
@@ -227,7 +260,8 @@ export const Contributions = () => {
             const canRetry = quest.status === 'rejected';
             return (
               <motion.div key={quest.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                className={cn("bg-white rounded-2xl p-5 border card-hover relative overflow-hidden", rarity.border, rarity.extra)}>
+                onClick={() => { setViewingQuest(quest); setShowDetailModal(true); }}
+                className={cn("bg-white rounded-2xl p-5 border card-hover relative overflow-hidden cursor-pointer", rarity.border, rarity.extra)}>
                 {/* Rarity badge */}
                 <div className={cn("absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold", rarity.bg, rarity.color)}>
                   {rarity.icon} {rarity.label}
@@ -263,9 +297,9 @@ export const Contributions = () => {
                 <div className="flex items-center justify-between">
                   <StatusBadge status={quest.status as any} />
                   {(canSubmit || canRetry) && (
-                    <button onClick={() => handleOpenSubmit(quest)}
+                    <button onClick={(e) => { e.stopPropagation(); handleOpenSubmit(quest); }}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition-colors active:scale-95">
-                      <PlayCircle className="w-3.5 h-3.5" /> {canRetry ? 'Nộp lại' : 'Nộp báo cáo'}
+                      <PlayCircle className="w-3.5 h-3.5" /> {quest.tabId === 'onboarding' ? 'Hoàn thành' : (canRetry ? 'Nộp lại' : 'Nộp báo cáo')}
                     </button>
                   )}
                   {quest.status === 'completed' && (
@@ -358,6 +392,118 @@ export const Contributions = () => {
           <button onClick={() => setShowIntro(false)}
             className="w-full py-4 bg-brand-gradient text-white rounded-2xl font-bold hover:shadow-brand transition-all active:scale-95">
             Bắt đầu khám phá ngay!
+          </button>
+        </div>
+      </Modal>
+
+      {/* Quest Detail Modal */}
+      <Modal isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} title="Chi tiết nhiệm vụ" size="md">
+        {viewingQuest && (
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl shadow-sm border", RARITY_CONFIG[viewingQuest.rarity].bg, RARITY_CONFIG[viewingQuest.rarity].border)}>
+                {RARITY_CONFIG[viewingQuest.rarity].icon}
+              </div>
+              <div>
+                <h3 className="text-xl font-extrabold text-slate-900 leading-tight">{viewingQuest.title}</h3>
+                <div className="flex gap-2 mt-2">
+                  <span className={cn("px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider", RARITY_CONFIG[viewingQuest.rarity].bg, RARITY_CONFIG[viewingQuest.rarity].color)}>
+                    {RARITY_CONFIG[viewingQuest.rarity].label}
+                  </span>
+                  <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                    {viewingQuest.subCategory}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Mô tả</h4>
+                <p className="text-sm text-slate-700 font-medium leading-relaxed">{viewingQuest.desc}</p>
+              </div>
+
+              <div className="bg-brand-50/50 rounded-2xl p-4 border border-brand-100">
+                <h4 className="text-[10px] font-extrabold text-brand-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <PlayCircle className="w-3 h-3" /> Cách thực hiện
+                </h4>
+                <p className="text-sm text-slate-700 font-medium leading-relaxed">
+                  {viewingQuest.howToComplete || "Thực hiện nhiệm vụ theo yêu cầu và nhấn nộp báo cáo kèm theo mô tả kết quả của bạn."}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                  <h4 className="text-[10px] font-extrabold text-emerald-500 uppercase tracking-widest mb-1">Thưởng EXP</h4>
+                  <div className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                    <Zap className="w-4 h-4 fill-emerald-500 text-emerald-500" /> +{viewingQuest.exp} EXP
+                  </div>
+                </div>
+                <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                  <h4 className="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest mb-1">Thưởng Credits</h4>
+                  <div className="flex items-center gap-1.5 text-amber-700 font-bold">
+                    <Star className="w-4 h-4 fill-amber-500 text-amber-500" /> +{viewingQuest.credits} Credits
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button onClick={() => { setShowDetailModal(false); if (viewingQuest.status === 'pending' || viewingQuest.status === 'in-progress' || viewingQuest.status === 'rejected') handleOpenSubmit(viewingQuest); }}
+              className="w-full py-3.5 bg-brand-gradient text-white rounded-2xl font-bold shadow-brand-lg hover:shadow-brand transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
+              disabled={viewingQuest.status === 'completed' || viewingQuest.status === 'submitted'}>
+              {viewingQuest.status === 'completed' ? 'Đã hoàn thành' : viewingQuest.status === 'submitted' ? 'Đang chờ duyệt' : viewingQuest.tabId === 'onboarding' ? 'Xác nhận hoàn thành' : 'Nộp báo cáo ngay'}
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Newbie Reward Modal */}
+      <Modal isOpen={showRewardModal} onClose={() => setShowRewardModal(false)} title="" size="md" showClose={false}>
+        <div className="py-2 text-center">
+          <motion.div initial={{ scale: 0.5, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', damping: 12 }}>
+            <div className="w-24 h-24 bg-brand-gradient rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-brand-lg relative">
+              <Gift className="w-12 h-12 text-white" />
+              <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-2 -right-2 text-3xl">🎁</motion.div>
+            </div>
+          </motion.div>
+
+          <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">CHÚC MỪNG TÂN THỦ! 🎉</h2>
+          <p className="text-slate-500 mb-8 font-medium">Bạn đã xuất sắc hoàn thành tất cả nhiệm vụ Onboarding và chính thức trở thành một iKamer thực thụ!</p>
+
+          <div className="bg-slate-50 rounded-[2rem] p-6 mb-8 border border-slate-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles className="w-12 h-12" /></div>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Bạn nhận được bộ quà tặng:</h4>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Sổ iKame 📓', color: 'bg-blue-100 text-blue-700' },
+                { label: 'Bút iKame 🖋️', color: 'bg-amber-100 text-amber-700' },
+                { label: 'Áo iKame 👕', color: 'bg-rose-100 text-rose-700' },
+                { label: 'Bóng bay Tân thủ 🎈', color: 'bg-purple-100 text-purple-700' }
+              ].map((gift, i) => (
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
+                  className={cn("px-4 py-3 rounded-2xl font-bold text-xs flex items-center justify-center", gift.color)}>
+                  {gift.label}
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-slate-200 flex items-center justify-center gap-6">
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Cấp độ</p>
+                <p className="text-xl font-black text-emerald-600">Lv. 2</p>
+              </div>
+              <div className="w-px h-8 bg-slate-200" />
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">iKame Coin</p>
+                <p className="text-xl font-black text-amber-600">+100</p>
+              </div>
+            </div>
+          </div>
+
+          <button onClick={() => setShowRewardModal(false)}
+            className="w-full py-4 bg-brand-gradient text-white rounded-2xl font-black shadow-brand-lg hover:scale-[1.02] active:scale-95 transition-all">
+            NHẬN QUÀ & KHÁM PHÁ TIẾP
           </button>
         </div>
       </Modal>

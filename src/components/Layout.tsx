@@ -10,6 +10,7 @@ import { cn } from '../utils';
 import { translations } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { WelcomeTour } from './WelcomeTour';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
@@ -694,6 +695,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
       <ToastContainer />
       <AIMascotChat />
+      <WelcomeTour />
     </div>
   );
 };

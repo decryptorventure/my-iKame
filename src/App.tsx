@@ -10,11 +10,24 @@ import { Team } from './pages/Team';
 import { Contributions } from './pages/Contributions';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
+import { AdminLayout } from './pages/admin/AdminLayout';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminQuests } from './pages/admin/AdminQuests';
+import { AdminRewards } from './pages/admin/AdminRewards';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, currentUser } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (currentUser?.role !== 'admin')
+    return <Navigate to="/dashboard" replace />;
+  return <AdminLayout>{children}</AdminLayout>;
 }
 
 function ManagerRoute({ children }: { children: React.ReactNode }) {
@@ -40,6 +53,13 @@ export default function App() {
         <Route path="/hris" element={<ManagerRoute><Team /></ManagerRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+        <Route path="/admin/quests" element={<AdminRoute><AdminQuests /></AdminRoute>} />
+        <Route path="/admin/rewards" element={<AdminRoute><AdminRewards /></AdminRoute>} />
+
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

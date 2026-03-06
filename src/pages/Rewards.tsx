@@ -5,15 +5,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader, Modal, StatusBadge, EmptyState } from '../components/UI';
 import { cn } from '../utils';
 
-const REWARDS = [
-  { id: 1, title: 'Voucher Coffee Highlands', desc: '1 ly nước bất kỳ tại Highlands Coffee', cost: 50, icon: Coffee, gradient: 'from-amber-500 to-orange-600', tag: 'Hot', stock: 20, category: 'food' },
-  { id: 2, title: 'iKame Remote Day', desc: '1 ngày WFH extra (áp dụng T2-T6)', cost: 80, icon: Plane, gradient: 'from-brand-500 to-purple-600', tag: 'Premium', stock: 5, category: 'benefit' },
-  { id: 3, title: 'Grab Card 100K', desc: 'Thẻ Grab trị giá 100.000đ', cost: 120, icon: ShoppingBag, gradient: 'from-emerald-500 to-teal-600', tag: 'New', stock: 15, category: 'voucher' },
-  { id: 4, title: 'Book Voucher 200K', desc: 'Mua sách tại Fahasa/Tiki, trị giá 200K', cost: 150, icon: Star, gradient: 'from-rose-500 to-pink-600', tag: null, stock: 8, category: 'learning' },
-  { id: 5, title: 'Gaming Top-up 50K', desc: 'Nạp thẻ game bất kỳ 50.000đ', cost: 60, icon: Ticket, gradient: 'from-violet-500 to-purple-600', tag: 'Hot', stock: 30, category: 'entertainment' },
-  { id: 6, title: 'Thêm 1 ngày phép năm', desc: 'Thêm 1 ngày nghỉ phép năm (áp dụng trong quý)', cost: 300, icon: Gift, gradient: 'from-brand-600 to-blue-600', tag: 'Premium', stock: 3, category: 'benefit' },
-];
-
 const TAG_STYLE: Record<string, string> = {
   Hot: 'bg-rose-100 text-rose-700 border-rose-200',
   Premium: 'bg-purple-100 text-purple-700 border-purple-200',
@@ -22,8 +13,8 @@ const TAG_STYLE: Record<string, string> = {
 
 export const Rewards = () => {
   const { currentUser } = useAuthStore();
-  const { spendCredits, addToast, addRewardHistory, rewardHistory, quests } = useAppStore();
-  const [confirmReward, setConfirmReward] = useState<typeof REWARDS[0] | null>(null);
+  const { spendCredits, addToast, addRewardHistory, rewardHistory, quests, rewards } = useAppStore();
+  const [confirmReward, setConfirmReward] = useState<typeof rewards[0] | null>(null);
   const [activeTab, setActiveTab] = useState<'store' | 'history'>('store');
   const [filter, setFilter] = useState('all');
 
@@ -55,7 +46,12 @@ export const Rewards = () => {
     { id: 'entertainment', label: '🎮 Giải trí' },
   ];
 
-  const filteredRewards = REWARDS.filter(r => filter === 'all' || r.category === filter);
+  const filteredRewards = rewards.filter(r => filter === 'all' || r.category === filter);
+
+  // Dynamic icon mapping since store stores strings
+  const ICON_MAP: Record<string, any> = {
+    Coffee, Plane, ShoppingBag, Star, Ticket, Gift
+  };
 
   return (
     <div className="space-y-6">
@@ -114,7 +110,7 @@ export const Rewards = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredRewards.map((reward, i) => {
-                  const Icon = reward.icon;
+                  const Icon = ICON_MAP[reward.icon as string] || Gift;
                   const tooExpensive = cantAfford(reward.cost);
                   return (
                     <motion.div key={reward.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
@@ -206,7 +202,10 @@ export const Rewards = () => {
             <div className="space-y-5">
               <div className="text-center">
                 <div className={`w-16 h-16 bg-gradient-to-br ${confirmReward.gradient} rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-brand`}>
-                  <confirmReward.icon className="w-8 h-8 text-white" />
+                  {(() => {
+                    const Icon = ICON_MAP[confirmReward.icon as string] || Gift;
+                    return <Icon className="w-8 h-8 text-white" />
+                  })()}
                 </div>
                 <h3 className="font-extrabold text-slate-900 text-lg">{confirmReward.title}</h3>
                 <p className="text-slate-500 text-sm mt-1">{confirmReward.desc}</p>
