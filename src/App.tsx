@@ -10,11 +10,15 @@ import { Team } from './pages/Team';
 import { Contributions } from './pages/Contributions';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
+import { Events } from './pages/Events';
+import { EventDetail } from './pages/EventDetail';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminQuests } from './pages/admin/AdminQuests';
 import { AdminRewards } from './pages/admin/AdminRewards';
+import { AdminBadges } from './pages/admin/AdminBadges';
+import { AdminEvents } from './pages/admin/AdminEvents';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -50,6 +54,8 @@ export default function App() {
         <Route path="/iquest" element={<ProtectedRoute><Contributions /></ProtectedRoute>} />
         <Route path="/iwiki" element={<ProtectedRoute><AppHub appId="iwiki" /></ProtectedRoute>} />
         <Route path="/ireward" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+        <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+        <Route path="/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
         <Route path="/hris" element={<ManagerRoute><Team /></ManagerRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
@@ -59,6 +65,8 @@ export default function App() {
         <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
         <Route path="/admin/quests" element={<AdminRoute><AdminQuests /></AdminRoute>} />
         <Route path="/admin/rewards" element={<AdminRoute><AdminRewards /></AdminRoute>} />
+        <Route path="/admin/badges" element={<AdminRoute><AdminBadges /></AdminRoute>} />
+        <Route path="/admin/events" element={<AdminRoute><AdminEvents /></AdminRoute>} />
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

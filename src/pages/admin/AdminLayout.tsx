@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Target, Gift, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Target, Gift, LogOut, Trophy, Gamepad2 } from 'lucide-react';
 import { useAuthStore } from '../../store';
 import { cn } from '../../utils';
 import { motion } from 'motion/react';
@@ -10,6 +10,8 @@ const MENU_ITEMS = [
     { id: 'users', path: '/admin/users', label: 'Quản lý Nhân sự', icon: Users },
     { id: 'quests', path: '/admin/quests', label: 'Quản lý iQuest', icon: Target },
     { id: 'rewards', path: '/admin/rewards', label: 'Quản lý iReward', icon: Gift },
+    { id: 'badges', path: '/admin/badges', label: 'Quản lý Huy hiệu', icon: Trophy },
+    { id: 'events', path: '/admin/events', label: 'Quản lý Sự kiện', icon: Gamepad2 },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

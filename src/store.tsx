@@ -35,6 +35,17 @@ export interface User {
   hasCompletedWelcomeTour?: boolean;
   hasCompletedAdminTour?: boolean;
   hasReceivedOnboardingReward?: boolean;
+  equippedBadge?: string;
+  unlockedBadges?: string[];
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  condition: string;
 }
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info' | 'exp' | 'levelup';
@@ -117,6 +128,16 @@ export interface Quest {
   eventEndTime?: string;
 }
 
+export interface TournamentEvent {
+  id: string;
+  name: string;
+  description: string;
+  banner: string;
+  startDate: string;
+  endDate: string;
+  status: 'upcoming' | 'ongoing' | 'completed';
+}
+
 export interface RewardHistory {
   id: string;
   rewardId: number;
@@ -166,6 +187,7 @@ export const MOCK_USERS: Record<string, { user: User; password: string }> = {
       dob: '2000-08-20', startDate: new Date().toISOString().split('T')[0], online: true,
       hasCompletedWelcomeTour: false,
       hasReceivedOnboardingReward: false,
+      unlockedBadges: [],
     },
   },
   'nva@ikame.vn': {
@@ -178,6 +200,8 @@ export const MOCK_USERS: Record<string, { user: User; password: string }> = {
       phone: '0908765432', address: '456 Cách Mạng Tháng 8, Q3, TP.HCM',
       dob: '1992-10-10', startDate: '2022-01-01', online: true,
       hasCompletedWelcomeTour: true,
+      unlockedBadges: ['b1', 'b2', 'b5'],
+      equippedBadge: 'b5',
     },
   },
   'admin@ikame.vn': {
@@ -191,6 +215,8 @@ export const MOCK_USERS: Record<string, { user: User; password: string }> = {
       dob: '1990-05-12', startDate: '2019-07-01', online: true,
       hasCompletedWelcomeTour: true,
       hasCompletedAdminTour: false,
+      unlockedBadges: ['b1', 'b2', 'b3', 'b4', 'b5'],
+      equippedBadge: 'b3',
     },
   },
 };
@@ -202,6 +228,19 @@ const INITIAL_REWARDS: Reward[] = [
   { id: 4, title: 'Book Voucher 200K', desc: 'Mua sách tại Fahasa/Tiki, trị giá 200K', cost: 150, icon: 'Star', gradient: 'from-rose-500 to-pink-600', tag: null, stock: 8, category: 'learning' },
   { id: 5, title: 'Gaming Top-up 50K', desc: 'Nạp thẻ game bất kỳ 50.000đ', cost: 60, icon: 'Ticket', gradient: 'from-violet-500 to-purple-600', tag: 'Hot', stock: 30, category: 'entertainment' },
   { id: 6, title: 'Thêm 1 ngày phép năm', desc: 'Thêm 1 ngày nghỉ phép năm (áp dụng trong quý)', cost: 300, icon: 'Gift', gradient: 'from-brand-600 to-blue-600', tag: 'Premium', stock: 3, category: 'benefit' },
+];
+
+const INITIAL_BADGES: Badge[] = [
+  { id: 'b1', name: 'Tân binh năng nổ', description: 'Hoàn thành Onboarding', icon: '🌱', color: 'text-emerald-500 bg-emerald-50 border-emerald-200', condition: 'Hoàn thành toàn bộ nhiệm vụ Onboarding' },
+  { id: 'b2', name: 'Người kể chuyện', description: 'Đăng 10 bài viết trên Newsfeed', icon: '✍️', color: 'text-blue-500 bg-blue-50 border-blue-200', condition: 'Đăng 10 bài viết' },
+  { id: 'b3', name: 'Kẻ hủy diệt Deadline', description: 'Hoàn thành 50 nhiệm vụ iQuest đúng hạn', icon: '⚔️', color: 'text-rose-500 bg-rose-50 border-rose-200', condition: 'Hoàn thành 50 nhiệm vụ' },
+  { id: 'b4', name: 'Thợ săn giải thưởng', description: 'Đổi 5 món quà từ iReward', icon: '🎁', color: 'text-purple-500 bg-purple-50 border-purple-200', condition: 'Đổi 5 phần quà' },
+  { id: 'b5', name: 'Ngôi sao đang lên', description: 'Đạt Level 10', icon: '⭐', color: 'text-amber-500 bg-amber-50 border-amber-200', condition: 'Đạt Level 10' }
+];
+
+const INITIAL_EVENTS: TournamentEvent[] = [
+  { id: 'ev1', name: 'Đường Đua Mùa Xuân', description: 'Hoàn thành các nhiệm vụ đặc biệt mùa xuân để nhận quà khủng.', banner: 'https://picsum.photos/seed/ev1/800/300', startDate: '2026-03-01', endDate: '2026-03-31', status: 'ongoing' },
+  { id: 'ev2', name: 'Tìm Kiếm Bug Thần Tốc', description: 'Giải đấu nội bộ dành riêng cho đội Dev/QA.', banner: 'https://picsum.photos/seed/ev2/800/300', startDate: '2026-04-10', endDate: '2026-04-20', status: 'upcoming' }
 ];
 
 const INITIAL_NOTIFICATIONS: Notification[] = [
@@ -339,6 +378,12 @@ interface AppState {
   updateQuest: (id: number, updates: Partial<Quest>) => void;
   deleteQuest: (id: number) => void;
 
+  // Events
+  events: TournamentEvent[];
+  createEvent: (ev: TournamentEvent) => void;
+  updateEvent: (id: string, ev: Partial<TournamentEvent>) => void;
+  deleteEvent: (id: string) => void;
+
   // Rewards
   rewards: Reward[];
   addReward: (reward: Omit<Reward, 'id'>) => void;
@@ -373,6 +418,13 @@ interface AppState {
   deletePost: (id: number) => void;
   togglePinPost: (id: number) => void;
   toggleLikePost: (id: number) => void;
+
+  // Badges
+  badges: Badge[];
+  equipBadge: (badgeId: string | undefined) => void;
+  createBadge: (badge: Badge) => void;
+  updateBadge: (id: string, updates: Partial<Badge>) => void;
+  unlockBadge: (badgeId: string, userId: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -420,6 +472,35 @@ export const useAppStore = create<AppState>()(
       markNotificationRead: (id) => set(s => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
       markAllRead: () => set(s => ({ notifications: s.notifications.map(n => ({ ...n, read: true })) })),
       addNotification: (n) => set(s => ({ notifications: [{ ...n, id: Date.now() }, ...s.notifications] })),
+
+      // Badges
+      badges: INITIAL_BADGES,
+      events: INITIAL_EVENTS,
+      equipBadge: (badgeId) => {
+        const auth = useAuthStore.getState();
+        if (auth.currentUser) {
+          auth.updateUser({ equippedBadge: badgeId });
+        }
+      },
+      createBadge: (badge) => set(s => ({ badges: [...s.badges, badge] })),
+      updateBadge: (id, updates) => set(s => ({ badges: s.badges.map(b => b.id === id ? { ...b, ...updates } : b) })),
+      unlockBadge: (badgeId, userId) => {
+        const auth = useAuthStore.getState();
+        if (auth.currentUser?.id === userId) {
+          const unlocked = auth.currentUser.unlockedBadges || [];
+          if (!unlocked.includes(badgeId)) {
+            auth.updateUser({ unlockedBadges: [...unlocked, badgeId] });
+            get().addToast({ type: 'success', title: 'Huy hiệu mới! 🏆', message: 'Bạn vừa mở khóa một thành tựu mới.' });
+          }
+        }
+        const user = get().users.find(u => u.id === userId);
+        if (user) {
+          const unlocked = user.unlockedBadges || [];
+          if (!unlocked.includes(badgeId)) {
+            get().updateEmployee(userId, { unlockedBadges: [...unlocked, badgeId] });
+          }
+        }
+      },
 
       attendanceRecords: buildInitialAttendance(),
       todayCheckedIn: false,
@@ -605,6 +686,10 @@ export const useAppStore = create<AppState>()(
       updateQuest: (id, updates) => set(s => ({ quests: s.quests.map(q => q.id === id ? { ...q, ...updates } : q) })),
       deleteQuest: (id) => set(s => ({ quests: s.quests.filter(q => q.id !== id) })),
 
+      createEvent: (ev) => set(s => ({ events: [ev, ...s.events] })),
+      updateEvent: (id, ev) => set(s => ({ events: s.events.map(x => x.id === id ? { ...x, ...ev } : x) })),
+      deleteEvent: (id) => set(s => ({ events: s.events.filter(x => x.id !== id) })),
+
       rewards: INITIAL_REWARDS,
       addReward: (reward) => set(s => ({ rewards: [...s.rewards, { ...reward, id: Date.now() }] })),
       updateReward: (id, updates) => set(s => ({ rewards: s.rewards.map(r => r.id === id ? { ...r, ...updates } : r) })),
@@ -689,6 +774,8 @@ export const useAppStore = create<AppState>()(
         notifications: s.notifications,
         theme: s.theme,
         language: s.language,
+        badges: s.badges,
+        events: s.events,
       }),
     }
   )

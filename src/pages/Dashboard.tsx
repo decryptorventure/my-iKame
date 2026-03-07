@@ -5,12 +5,15 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils';
 import { Modal } from '../components/UI';
+import { PublicProfileModal } from '../components/PublicProfileModal';
 
 export const Dashboard = () => {
   const { currentUser } = useAuthStore();
-  const { addExp, addToast, checkIn, todayCheckedIn, celebrations, sendWish, quests, attendanceRecords, posts, addPost, toggleLikePost } = useAppStore();
+  const { addExp, addToast, checkIn, todayCheckedIn, celebrations, sendWish, quests, attendanceRecords, posts, addPost, toggleLikePost, users, badges } = useAppStore();
   const [newPostContent, setNewPostContent] = useState('');
+  const [leaderboardType, setLeaderboardType] = useState<'personal' | 'team'>('personal');
   const [leaderboardTab, setLeaderboardTab] = useState<'weekly' | 'monthly'>('weekly');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const [showKudosModal, setShowKudosModal] = useState(false);
   const [kudosRecipient, setKudosRecipient] = useState('');
@@ -37,7 +40,23 @@ export const Dashboard = () => {
       { name: 'Hoàng Văn E', level: 3, exp: 1200, avatar: 'https://picsum.photos/seed/user5/150/150' },
     ],
   };
-  const leaderboard = leaderboardData[leaderboardTab];
+
+  const teamLeaderboardData = {
+    weekly: [
+      { name: 'Engineering', exp: 12500, avatar: 'https://ui-avatars.com/api/?name=EN&background=0ea5e9&color=fff', memberCount: 24 },
+      { name: 'Marketing', exp: 8200, avatar: 'https://ui-avatars.com/api/?name=MK&background=f43f5e&color=fff', memberCount: 15 },
+      { name: 'Product', exp: 7100, avatar: 'https://ui-avatars.com/api/?name=PR&background=10b981&color=fff', memberCount: 8 },
+      { name: 'HR & Admin', exp: 4500, avatar: 'https://ui-avatars.com/api/?name=HR&background=8b5cf6&color=fff', memberCount: 6 },
+    ],
+    monthly: [
+      { name: 'Engineering', exp: 52000, avatar: 'https://ui-avatars.com/api/?name=EN&background=0ea5e9&color=fff', memberCount: 24 },
+      { name: 'Product', exp: 31000, avatar: 'https://ui-avatars.com/api/?name=PR&background=10b981&color=fff', memberCount: 8 },
+      { name: 'Marketing', exp: 28500, avatar: 'https://ui-avatars.com/api/?name=MK&background=f43f5e&color=fff', memberCount: 15 },
+      { name: 'HR & Admin', exp: 19000, avatar: 'https://ui-avatars.com/api/?name=HR&background=8b5cf6&color=fff', memberCount: 6 },
+    ]
+  };
+
+  const currentLeaderboard = leaderboardType === 'personal' ? leaderboardData[leaderboardTab] : teamLeaderboardData[leaderboardTab];
   const medals = ['🥇', '🥈', '🥉', '4', '5'];
 
   const [wishInputs, setWishInputs] = useState<Record<number, string>>({});
@@ -189,6 +208,24 @@ export const Dashboard = () => {
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" /> Bảng xếp hạng</h3>
             </div>
+
+            {/* Type Toggle */}
+            <div className="flex gap-1 mb-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <button
+                onClick={() => setLeaderboardType('personal')}
+                className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", leaderboardType === 'personal' ? 'bg-white text-brand-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700')}
+              >
+                Cá nhân
+              </button>
+              <button
+                onClick={() => setLeaderboardType('team')}
+                className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", leaderboardType === 'team' ? 'bg-white text-brand-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700')}
+              >
+                Phòng ban
+              </button>
+            </div>
+
+            {/* Time Toggle */}
             <div className="flex gap-1 mb-3">
               {(['weekly', 'monthly'] as const).map(tab => (
                 <button key={tab} onClick={() => setLeaderboardTab(tab)}
@@ -198,15 +235,20 @@ export const Dashboard = () => {
                 </button>
               ))}
             </div>
+
             <div className="space-y-1.5">
-              {leaderboard.map((u, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors -mx-2 cursor-pointer">
+              {currentLeaderboard.map((u: any, i) => (
+                <div key={i} onClick={() => leaderboardType === 'personal' && setSelectedUserId(u.name)} className={cn("flex items-center gap-3 p-2 rounded-xl transition-colors -mx-2", leaderboardType === 'personal' ? "hover:bg-slate-50 cursor-pointer group" : "")}>
                   <span className={cn("text-center w-6 font-bold", i < 3 ? "text-lg" : "text-xs text-slate-400")}>{i < 3 ? medals[i] : `#${i + 1}`}</span>
                   <img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm" referrerPolicy="no-referrer" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[12px] text-slate-900 truncate">{u.name}</p>
+                    <p className={cn("font-bold text-[12px] text-slate-900 truncate transition-colors", leaderboardType === 'personal' && "group-hover:text-brand-600")}>{u.name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-1.5 py-0.5 rounded">Lv.{u.level}</span>
+                      {leaderboardType === 'personal' ? (
+                        <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-1.5 py-0.5 rounded">Lv.{u.level}</span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">{u.memberCount} thành viên</span>
+                      )}
                       <span className="text-[10px] text-slate-400">{u.exp} XP</span>
                     </div>
                   </div>
@@ -373,73 +415,78 @@ export const Dashboard = () => {
             </div>
           </motion.div>
 
-          {sortedPosts.map((post, idx) => (
-            <motion.div key={post.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
-              className={cn("bg-white rounded-2xl p-5 border shadow-sm card-hover relative", post.isPinned ? "border-brand-300 ring-2 ring-brand-500/10" : "border-slate-200/60")}>
-              {post.isPinned && (
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 bg-brand-50 text-brand-600 rounded-lg text-[10px] font-black uppercase tracking-wider border border-brand-100">
-                  <TrendingUp className="w-3 h-3" /> Được ghim
-                </div>
-              )}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <img src={post.author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-extrabold text-slate-900">{post.author.name}</span>
-                      {post.type?.startsWith('ai_') && <span className="px-1.5 py-0.5 bg-brand-50 text-brand-600 rounded text-[9px] font-black uppercase tracking-wider border border-brand-100">AI</span>}
-                      {post.badge && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-bold border border-blue-100">{post.badge}</span>}
-                      {post.type === 'event' && <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-bold border border-amber-100 uppercase">Sự kiện</span>}
+          {sortedPosts.map((post, idx) => {
+            const postUser = users.find(u => u.name === post.author.name);
+            const userBadge = postUser?.equippedBadge ? badges.find(b => b.id === postUser.equippedBadge) : null;
+            return (
+              <motion.div key={post.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
+                className={cn("bg-white rounded-2xl p-5 border shadow-sm card-hover relative", post.isPinned ? "border-brand-300 ring-2 ring-brand-500/10" : "border-slate-200/60")}>
+                {post.isPinned && (
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 bg-brand-50 text-brand-600 rounded-lg text-[10px] font-black uppercase tracking-wider border border-brand-100">
+                    <TrendingUp className="w-3 h-3" /> Được ghim
+                  </div>
+                )}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setSelectedUserId(post.author.name)}>
+                    <img src={post.author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-extrabold text-slate-900 group-hover:text-brand-600 transition-colors">{post.author.name}</span>
+                        {post.type?.startsWith('ai_') && <span className="px-1.5 py-0.5 bg-brand-50 text-brand-600 rounded text-[9px] font-black uppercase tracking-wider border border-brand-100">AI</span>}
+                        {post.badge && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-bold border border-blue-100">{post.badge}</span>}
+                        {userBadge && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold border", userBadge.color)} title={userBadge.name}>{userBadge.icon} {userBadge.name}</span>}
+                        {post.type === 'event' && <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-bold border border-amber-100 uppercase">Sự kiện</span>}
+                      </div>
+                      <p className="text-[11px] text-slate-400">{post.author.title} · {post.time}</p>
                     </div>
-                    <p className="text-[11px] text-slate-400">{post.author.title} · {post.time}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {post.type === 'achievement' && 'expEarned' in post && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-200">
+                        <Zap className="w-3 h-3" /> +{post.expEarned} XP
+                      </div>
+                    )}
+                    <button className="p-1.5 text-slate-400 hover:bg-slate-50 rounded-lg"><MoreHorizontal className="w-4 h-4" /></button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {post.type === 'achievement' && 'expEarned' in post && (
-                    <div className="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-200">
-                      <Zap className="w-3 h-3" /> +{post.expEarned} XP
-                    </div>
-                  )}
-                  <button className="p-1.5 text-slate-400 hover:bg-slate-50 rounded-lg"><MoreHorizontal className="w-4 h-4" /></button>
-                </div>
-              </div>
-              <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-                {post.content.split('**').map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part)}
-              </p>
+                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                  {post.content.split('**').map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part)}
+                </p>
 
-              {post.featuredUser && (
-                <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4">
-                  <img src={post.featuredUser.avatar} alt="" className="w-12 h-12 rounded-full object-cover shadow-sm" referrerPolicy="no-referrer" />
-                  <div className="flex-1 min-w-0">
-                    <h5 className="font-bold text-sm text-slate-900">{post.featuredUser.name}</h5>
-                    <p className="text-xs text-slate-500">{post.featuredUser.title}</p>
+                {post.featuredUser && (
+                  <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => setSelectedUserId(post.featuredUser?.name || null)}>
+                    <img src={post.featuredUser.avatar} alt="" className="w-12 h-12 rounded-full object-cover shadow-sm" referrerPolicy="no-referrer" />
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-bold text-sm text-slate-900">{post.featuredUser.name}</h5>
+                      <p className="text-xs text-slate-500">{post.featuredUser.title}</p>
+                    </div>
+                    <button className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors pointer-events-none">
+                      Xem Profile
+                    </button>
                   </div>
-                  <button className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors">
-                    Xem Profile
+                )}
+
+                {post.image && <img src={post.image} alt="" className="mt-4 rounded-2xl w-full h-auto object-cover border border-slate-100" referrerPolicy="no-referrer" />}
+
+                {post.type === 'achievement' && post.expEarned && (
+                  <div className="mt-4 flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl text-xs font-bold">
+                    <Trophy className="w-4 h-4" /> Hoàn thành mục tiêu: +{post.expEarned} EXP
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 mb-2 mt-4">
+                  <span className="font-medium">{post.likes} lượt thích</span>
+                  <span>{post.comments} bình luận</span>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => handleLike(post.id)} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 ${post.isLiked ? 'text-rose-600 bg-rose-50' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-rose-500' : ''}`} /> {post.isLiked ? 'Đã thích' : 'Thích'}
                   </button>
+                  <button className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"><MessageCircle className="w-4 h-4" /> Bình luận</button>
+                  <button className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"><Share2 className="w-4 h-4" /> Chia sẻ</button>
                 </div>
-              )}
-
-              {post.image && <img src={post.image} alt="" className="mt-4 rounded-2xl w-full h-auto object-cover border border-slate-100" referrerPolicy="no-referrer" />}
-
-              {post.type === 'achievement' && post.expEarned && (
-                <div className="mt-4 flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl text-xs font-bold">
-                  <Trophy className="w-4 h-4" /> Hoàn thành mục tiêu: +{post.expEarned} EXP
-                </div>
-              )}
-              <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 mb-2 mt-4">
-                <span className="font-medium">{post.likes} lượt thích</span>
-                <span>{post.comments} bình luận</span>
-              </div>
-              <div className="flex gap-1">
-                <button onClick={() => handleLike(post.id)} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 ${post.isLiked ? 'text-rose-600 bg-rose-50' : 'text-slate-600 hover:bg-slate-50'}`}>
-                  <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-rose-500' : ''}`} /> {post.isLiked ? 'Đã thích' : 'Thích'}
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"><MessageCircle className="w-4 h-4" /> Bình luận</button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"><Share2 className="w-4 h-4" /> Chia sẻ</button>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </div>
 
         {/* Right */}
@@ -529,6 +576,7 @@ export const Dashboard = () => {
         </div>
       </Modal>
 
+      <PublicProfileModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
     </div>
   );
 };

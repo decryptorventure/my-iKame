@@ -503,6 +503,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const CORE_NAV_LOC = [
     { id: 'dashboard', path: '/dashboard', label: t.dashboard, icon: Home },
     { id: 'contributions', path: '/iquest', label: t.iquest, icon: Award },
+    { id: 'events', path: '/events', label: 'Sự kiện', icon: Sparkles },
     { id: 'rewards', path: '/ireward', label: t.ireward, icon: Gift },
   ];
 
