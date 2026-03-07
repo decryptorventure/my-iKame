@@ -173,7 +173,7 @@ export const Dashboard = () => {
       {/* Main 3-col grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left */}
-        <div className="lg:col-span-3 space-y-5 hidden lg:block">
+        <div id="tour-quests" className="lg:col-span-3 space-y-5 hidden lg:block">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
             <div className="text-center">
               <div className="relative inline-block mb-3">
@@ -204,7 +204,7 @@ export const Dashboard = () => {
           </motion.div>
 
           {/* Leaderboard */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
+          <motion.div id="tour-leaderboard" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" /> Bảng xếp hạng</h3>
             </div>

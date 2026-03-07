@@ -553,7 +553,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </div>
 
         {/* Nav */}
-        <div className="flex-1 overflow-y-auto py-3 px-3 custom-scrollbar">
+        <div id="tour-nav" className="flex-1 overflow-y-auto py-3 px-3 custom-scrollbar">
           <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tính năng chính</p>
           <nav className="space-y-0.5">
             {CORE_NAV_LOC.map(item => {
@@ -565,7 +565,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     isActive ? "bg-brand-gradient text-white shadow-brand" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")}>
                   <Icon className={cn("w-[18px] h-[18px]", isActive ? "text-white" : "text-slate-400 group-hover:text-brand-500")} />
                   {item.label}
-                  {isActive && <motion.div layoutId="activeNav" className="absolute right-2 w-1.5 h-1.5 bg-white rounded-full" />}
+                  {isActive && <motion.div layoutId={`activeNav-${item.id}`} className="absolute right-2 w-1.5 h-1.5 bg-white rounded-full" />}
                 </button>
               );
             })}
@@ -578,7 +578,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     isActive ? "bg-brand-gradient text-white shadow-brand" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900")}>
                   <Icon className={cn("w-[18px] h-[18px]", isActive ? "text-white" : "text-slate-400 group-hover:text-brand-500")} />
                   {item.label}
-                  {isActive && <motion.div layoutId="activeNav" className="absolute right-2 w-1.5 h-1.5 bg-white rounded-full" />}
+                  {isActive && <motion.div layoutId={`activeNav-${item.id}`} className="absolute right-2 w-1.5 h-1.5 bg-white rounded-full" />}
                 </button>
               );
             })}
@@ -637,9 +637,9 @@ export const Layout = ({ children }: LayoutProps) => {
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex-1"><GlobalSearch /></div>
+          <div id="tour-search" className="flex-1"><GlobalSearch /></div>
 
-          <div className="flex items-center gap-2">
+          <div id="tour-header-actions" className="flex items-center gap-2">
             {(currentUser?.role === 'manager' || currentUser?.role === 'admin') && (
               <span className="px-2.5 py-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg hidden sm:block">
                 👑 Quản lý
