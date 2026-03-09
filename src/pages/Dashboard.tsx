@@ -494,51 +494,69 @@ export const Dashboard = () => {
           {/* Onboarding Progress */}
           {isNewEmployee && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              className="bg-gradient-to-br from-brand-50 to-orange-50 rounded-2xl p-5 border border-brand-200/60 shadow-sm">
-              <h3 className="font-bold mb-3 text-xs uppercase tracking-widest text-brand-500 flex items-center gap-2">
+              className="bg-[#FFF9F2] rounded-[2rem] p-7 border border-[#FFEAD1] shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <Rocket className="w-20 h-20 text-[#FF6B00]" />
+              </div>
+
+              <h3 className="font-extrabold mb-6 text-[11px] uppercase tracking-[0.2em] text-[#FF9E58] flex items-center gap-2">
                 <Award className="w-4 h-4" /> Onboarding
               </h3>
-              <div className="text-center mb-3">
-                <p className="text-3xl font-extrabold text-brand-600">{onboardingPercent}%</p>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5">{completedOnboarding}/{totalOnboarding} nhiệm vụ đã hoàn thành</p>
+
+              <div className="text-center mb-6">
+                <p className="text-6xl font-black text-[#FF6B00] leading-none tracking-tight">100%</p>
+                <p className="text-xs text-slate-500 font-bold mt-3 opacity-80">{completedOnboarding}/{totalOnboarding} nhiệm vụ đã hoàn thành</p>
               </div>
-              <div className="w-full bg-white rounded-full h-3 overflow-hidden border border-brand-100">
+
+              <div className="w-full bg-[#FFD7A3]/30 rounded-full h-3.5 mb-8 p-0.5">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${onboardingPercent}%` }}
                   transition={{ duration: 1.5, ease: 'easeOut' }}
-                  className="bg-brand-gradient h-full rounded-full" />
+                  className="bg-[#FF6B00] h-full rounded-full shadow-lg shadow-orange-200/50" />
               </div>
-              <div className="mt-3 space-y-1.5">
+
+              <div className="space-y-3 mb-8">
                 {onboardingQuests.slice(0, 4).map(q => (
-                  <div key={q.id} className="flex items-center gap-2 text-xs">
-                    <CheckCircle2 className={cn("w-3.5 h-3.5 flex-shrink-0", q.status === 'completed' ? 'text-emerald-500' : 'text-slate-300')} />
-                    <span className={cn("truncate", q.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-700 font-medium')}>{q.title}</span>
+                  <div key={q.id} className="flex items-center gap-3 text-[13px]">
+                    <div className={cn(
+                      "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2",
+                      q.status === 'completed' ? "bg-white border-emerald-400 text-emerald-500" : "bg-white border-slate-200 text-transparent"
+                    )}>
+                      <CheckCircle2 className="w-3 h-3 stroke-[3]" />
+                    </div>
+                    <span className={cn(
+                      "truncate font-bold tracking-tight",
+                      q.status === 'completed' ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-600'
+                    )}>{q.title}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex flex-col gap-2">
-                <a href="/iquest" className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition-colors shadow-brand active:scale-95">
-                  Làm nhiệm vụ tiếp <ChevronRight className="w-4 h-4" />
-                </a>
-              </div>
+
+              <a href="/iquest" className="w-full flex items-center justify-center gap-2 py-4 bg-[#F15A24] text-white rounded-2xl font-black text-sm hover:bg-[#D9481B] transition-all shadow-lg shadow-orange-200 active:scale-95 group">
+                Làm nhiệm vụ tiếp <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              </a>
             </motion.div>
           )}
 
           {/* Events */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
-            <h3 className="font-bold mb-4 text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2"><Calendar className="w-4 h-4 text-brand-500" /> Sự kiện sắp tới</h3>
-            <div className="space-y-3">
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm">
+            <h3 className="font-extrabold mb-5 text-[11px] uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[#FF6B00]" /> Sự kiện sắp tới
+            </h3>
+            <div className="space-y-4">
               {[
                 { day: 'Th 4', date: '25', title: 'Townhall Q1', time: '14:00-16:00', color: 'text-rose-500' },
                 { day: 'Th 6', date: '27', title: 'Happy Hour', time: '16:30-18:00', color: 'text-brand-500' },
               ].map((evt, i) => (
-                <div key={i} className="flex gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-200 hover:bg-brand-50/30 transition-all cursor-pointer group">
-                  <div className="flex flex-col items-center justify-center w-12 h-12 bg-white rounded-xl border border-slate-200 flex-shrink-0 shadow-sm">
-                    <span className={`text-[9px] font-bold ${evt.color} uppercase tracking-wider`}>{evt.day}</span>
-                    <span className="text-lg font-extrabold text-slate-900 leading-none mt-0.5">{evt.date}</span>
+                <div key={i} className="flex gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-50 hover:border-brand-100 hover:bg-white transition-all cursor-pointer group shadow-sm shadow-slate-100/50">
+                  <div className="flex flex-col items-center justify-center w-14 h-14 bg-white rounded-2xl border border-slate-100 flex-shrink-0 shadow-sm">
+                    <span className={`text-[10px] font-black ${evt.color} uppercase tracking-wider`}>{evt.day}</span>
+                    <span className="text-xl font-black text-slate-900 leading-none mt-1">{evt.date}</span>
                   </div>
-                  <div className="flex-1 min-w-0 py-0.5">
-                    <h4 className="font-bold text-sm text-slate-900 group-hover:text-brand-600">{evt.title}</h4>
-                    <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> {evt.time}</p>
+                  <div className="flex-1 min-w-0 py-1">
+                    <h4 className="font-black text-[15px] text-slate-900 group-hover:text-[#FF6B00] transition-colors">{evt.title}</h4>
+                    <p className="text-xs text-slate-400 font-bold mt-1.5 flex items-center gap-1.5 opacity-80">
+                      <Clock className="w-3.5 h-3.5" /> {evt.time}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -547,17 +565,17 @@ export const Dashboard = () => {
 
           {/* Online colleagues */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
-            <h3 className="font-bold mb-3 text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              <Users className="w-4 h-4 text-emerald-500" /> Đồng nghiệp online
+            className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm">
+            <h3 className="font-extrabold mb-5 text-[11px] uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#10B981]" /> Đồng nghiệp online
             </h3>
-            <div className="flex -space-x-2">
+            <div className="flex -space-x-3 mb-4">
               {['https://picsum.photos/seed/manager1/150/150', 'https://picsum.photos/seed/user3/150/150', 'https://picsum.photos/seed/user4/150/150', 'https://picsum.photos/seed/user5/150/150', 'https://picsum.photos/seed/user6/150/150'].map((avatar, i) => (
-                <img key={i} src={avatar} alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" referrerPolicy="no-referrer" />
+                <img key={i} src={avatar} alt="" className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-100" referrerPolicy="no-referrer" />
               ))}
-              <div className="w-9 h-9 rounded-full bg-brand-50 border-2 border-white flex items-center justify-center text-[10px] font-bold text-brand-600">+12</div>
+              <div className="w-10 h-10 rounded-full bg-orange-50 border-2 border-white flex items-center justify-center text-[10px] font-black text-[#FF6B00] ring-1 ring-slate-100 shadow-sm">+12</div>
             </div>
-            <p className="text-[11px] text-slate-500 mt-2">17 nhân viên đang hoạt động</p>
+            <p className="text-xs text-slate-400 font-bold opacity-80">17 nhân viên đang hoạt động</p>
           </motion.div>
         </div>
       </div>

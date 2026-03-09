@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TooltipRenderProps } from 'react-joyride';
-import { X, ChevronRight, Check } from 'lucide-react';
+import { X, Sparkles, ChevronRight, Check } from 'lucide-react';
 import { cn } from '../utils';
-import assistantAvatar from '../assets/assistant.png';
 
 export const MascotTooltip = ({
     index,
@@ -26,8 +25,8 @@ export const MascotTooltip = ({
                 className="w-full h-full p-0 m-0"
             >
                 {/* Mascot Avatar positioned overlapping the card */}
-                <div className="absolute -top-6 -left-4 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10 animate-bounce-slow overflow-hidden">
-                    <img src={assistantAvatar} alt="Assistant" className="w-full h-full object-contain" />
+                <div className="absolute -top-6 -left-4 w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10 animate-bounce-slow">
+                    <Sparkles className="w-8 h-8 text-white" />
                 </div>
 
                 <div className="pt-8 pb-5 px-6">
