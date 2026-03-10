@@ -159,7 +159,7 @@ export const AIAssistantWidget = () => {
             </div>
 
             {/* Suggestion Card */}
-            <div className="relative h-[160px] z-10">
+            <div className="relative h-[180px] z-10">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentSuggestion.id}
@@ -183,7 +183,7 @@ export const AIAssistantWidget = () => {
                             </p>
                         </div>
 
-                        <div className="pl-[44px]">
+                        <div className="pl-[44px] pb-1">
                             {currentSuggestion.actionType === 'button' ? (
                                 <button
                                     onClick={currentSuggestion.actionClick}
@@ -206,7 +206,7 @@ export const AIAssistantWidget = () => {
 
             {/* Pagination dots if multiple suggestions */}
             {suggestions.length > 1 && (
-                <div className="flex justify-center gap-1.5 mt-5 relative z-10">
+                <div className="flex justify-center gap-1.5 mt-6 relative z-10">
                     {suggestions.map((_, idx) => (
                         <button
                             key={idx}

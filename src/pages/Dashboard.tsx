@@ -15,6 +15,7 @@ export const Dashboard = () => {
   const [leaderboardType, setLeaderboardType] = useState<'personal' | 'team'>('personal');
   const [leaderboardTab, setLeaderboardTab] = useState<'weekly' | 'monthly'>('weekly');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [feedFilter, setFeedFilter] = useState<'all' | 'pnod' | 'kudos' | 'ai'>('all');
 
   const [showKudosModal, setShowKudosModal] = useState(false);
   const [kudosRecipient, setKudosRecipient] = useState('');
@@ -66,6 +67,14 @@ export const Dashboard = () => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
     return 0;
+  });
+
+  const filteredPosts = sortedPosts.filter(post => {
+    if (feedFilter === 'all') return true;
+    if (feedFilter === 'pnod') return post.author.name.includes('PnOD') || post.author.name.includes('HR');
+    if (feedFilter === 'kudos') return post.type === 'kudos';
+    if (feedFilter === 'ai') return post.type === 'ai_update';
+    return true;
   });
 
   const handleLike = (id: number) => toggleLikePost(id);
@@ -174,7 +183,7 @@ export const Dashboard = () => {
       {/* Main 3-col grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left */}
-        <div id="tour-quests" className="lg:col-span-3 space-y-5 hidden lg:block">
+        <div id="tour-quests" className="lg:col-span-3 space-y-5 hidden lg:block scroll-mt-28">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
             <div className="text-center">
               <div className="relative inline-block mb-3">
@@ -260,7 +269,7 @@ export const Dashboard = () => {
         </div>
 
         {/* Feed */}
-        <div className="lg:col-span-6 space-y-5">
+        <div id="tour-feed" className="lg:col-span-6 space-y-5 scroll-mt-28">
           {/* New Employee Onboarding Guide in Feed */}
           {isNewEmployee && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -416,25 +425,70 @@ export const Dashboard = () => {
             </div>
           </motion.div>
 
-          {sortedPosts.map((post, idx) => {
+          {/* Feed Filters */}
+          <div className="flex gap-2 p-1.5 bg-slate-50 border border-slate-200/60 rounded-xl overflow-x-auto no-scrollbar">
+            {[
+              { id: 'all', label: 'Tất cả' },
+              { id: 'pnod', label: 'Thông báo PnOD' },
+              { id: 'kudos', label: 'Vinh danh' },
+              { id: 'ai', label: 'Em Sen iKame' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setFeedFilter(tab.id as any)}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all",
+                  feedFilter === tab.id
+                    ? "bg-white text-brand-600 shadow-sm border border-slate-200"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {filteredPosts.map((post, idx) => {
             const postUser = users.find(u => u.name === post.author.name);
             const userBadge = postUser?.equippedBadge ? badges.find(b => b.id === postUser.equippedBadge) : null;
+            const isAiPost = post.type === 'ai_update';
+            const isPnodPost = post.author.name.includes('PnOD');
+
             return (
               <motion.div key={post.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
-                className={cn("bg-white rounded-2xl p-5 border shadow-sm card-hover relative", post.isPinned ? "border-brand-300 ring-2 ring-brand-500/10" : "border-slate-200/60")}>
+                className={cn(
+                  "rounded-2xl p-5 border shadow-sm card-hover relative overflow-hidden",
+                  post.isPinned ? "border-brand-300 ring-2 ring-brand-500/10 bg-white" :
+                    isAiPost ? "bg-gradient-to-br from-indigo-50/50 to-white border-indigo-100/60" :
+                      isPnodPost ? "bg-gradient-to-br from-purple-50/50 to-white border-purple-100/60" :
+                        "bg-white border-slate-200/60"
+                )}>
+
+                {/* Background Decoration for AI Posts */}
+                {isAiPost && (
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100/40 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+                )}
+
+                {/* Background Decoration for PnOD Posts */}
+                {isPnodPost && (
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-purple-100/40 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+                )}
+
                 {post.isPinned && (
                   <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 bg-brand-50 text-brand-600 rounded-lg text-[10px] font-black uppercase tracking-wider border border-brand-100">
                     <TrendingUp className="w-3 h-3" /> Được ghim
                   </div>
                 )}
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-3 relative z-10">
                   <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setSelectedUserId(post.author.name)}>
-                    <img src={post.author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
+                    <img src={post.author.avatar} alt="" className={cn("w-10 h-10 rounded-full object-cover", isAiPost ? "border-2 border-indigo-200 p-0.5" : isPnodPost ? "border-2 border-purple-200" : "")} referrerPolicy="no-referrer" />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-extrabold text-slate-900 group-hover:text-brand-600 transition-colors">{post.author.name}</span>
-                        {post.type?.startsWith('ai_') && <span className="px-1.5 py-0.5 bg-brand-50 text-brand-600 rounded text-[9px] font-black uppercase tracking-wider border border-brand-100">AI</span>}
-                        {post.badge && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-bold border border-blue-100">{post.badge}</span>}
+                        <span className={cn("text-sm font-extrabold transition-colors", isAiPost ? "text-indigo-900 group-hover:text-indigo-600" : isPnodPost ? "text-purple-900 group-hover:text-purple-600" : "text-slate-900 group-hover:text-brand-600")}>{post.author.name}</span>
+                        {isAiPost && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[9px] font-black uppercase tracking-wider border border-indigo-200">✨ AI Assistant</span>}
+                        {isPnodPost && <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[9px] font-black uppercase tracking-wider border border-purple-200">Chính thức</span>}
+                        {post.badge && !isAiPost && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-bold border border-blue-100">{post.badge}</span>}
+
                         {userBadge && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold border", userBadge.color)} title={userBadge.name}>{userBadge.icon} {userBadge.name}</span>}
                         {post.type === 'event' && <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-bold border border-amber-100 uppercase">Sự kiện</span>}
                       </div>

@@ -17,30 +17,42 @@ const NEWBIE_STEPS: Step[] = [
         content: 'Đây là các tính năng chính của ứng dụng. Bạn có thể chấm công (iCheck), làm nhiệm vụ (iQuest) và đổi thưởng (iReward) tại đây.',
         title: 'Menu Điều hướng',
         placement: 'right',
+        disableBeacon: true,
     },
     {
         target: '#tour-header-actions',
         content: 'Những người quản lý có thể thao tác ở góc này. Bên cạnh là ô tìm kiếm nhanh toàn hệ thống.',
         title: 'Công cụ nhanh',
         placement: 'bottom-end',
+        disableBeacon: true,
     },
     {
         target: '#tour-search',
         content: 'Muốn tìm đồng nghiệp, iQuest hay thông báo? Gõ vào đây là ra ngay!',
         title: 'Tìm kiếm toàn cục',
         placement: 'bottom',
+        disableBeacon: true,
     },
     {
         target: '#tour-quests',
         content: 'Theo dõi tiến trình Onboarding, cấp độ và Credits hiện có của bạn ở ngay màn hình chính.',
         title: 'Chỉ số cá nhân',
-        placement: 'right',
+        placement: 'auto',
+        disableBeacon: true,
     },
     {
         target: '#tour-leaderboard',
         content: 'Cạnh tranh với đồng nghiệp trên Bảng xếp hạng, hoặc xem thành tích của phòng ban mình!',
         title: 'Bảng Xếp Hạng',
-        placement: 'left',
+        placement: 'auto',
+        disableBeacon: true,
+    },
+    {
+        target: '#tour-feed',
+        content: 'Đây là News Feed. Nơi cập nhật các thông báo từ phòng ban PnOD, xem vinh danh đồng nghiệp, và nhận các gợi ý thông minh từ "Em Sen iKame".',
+        title: 'Bảng Tin My iKame',
+        placement: 'auto',
+        disableBeacon: true,
     },
     {
         target: 'body',
@@ -111,6 +123,9 @@ export const WelcomeTour = () => {
             showProgress
             showSkipButton
             disableOverlayClose
+            disableScrolling={false}
+            scrollOffset={200}
+            scrollDuration={500}
             spotlightPadding={8}
             tooltipComponent={MascotTooltip}
             callback={handleJoyrideCallback}

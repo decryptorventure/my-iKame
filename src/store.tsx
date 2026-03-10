@@ -458,6 +458,20 @@ export const useAppStore = create<AppState>()(
         if (!silent) {
           get().addToast({ type: 'exp', title: reason, message: `+${amount} EXP`, expAmount: amount });
         }
+
+        // Auto post when levelling up
+        if (exp >= maxExp || (exp + amount) >= maxExp || reason.includes('Lên cấp')) {
+          const newLevel = level + (exp + amount >= maxExp ? 1 : 0);
+          if (newLevel > level) {
+            get().addPost({
+              author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
+              content: `🎉 Tút tút! Chúc mừng **${auth.currentUser.name}** đã thăng cấp lên **Level ${newLevel}**!\n\nHãy tiếp tục giữ vững phong độ đỉnh cao này nhé! Đừng quên kiểm tra xem có nhiệm vụ mới nào vừa được mở khóa không nha. 🚀`,
+              type: 'ai_update',
+              badge: 'Level Up',
+              featuredUser: { name: auth.currentUser.name, title: auth.currentUser.title, avatar: auth.currentUser.avatar }
+            });
+          }
+        }
       },
 
       spendCredits: (amount) => {
@@ -655,6 +669,19 @@ export const useAppStore = create<AppState>()(
             if (quest.tabId === 'onboarding') {
               get().checkOnboardingCompletion();
             }
+
+            // AI post for epic/legendary quests
+            if (quest.rarity === 'epic' || quest.rarity === 'legendary') {
+              const currentUser = useAuthStore.getState().currentUser;
+              get().addPost({
+                author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
+                content: `🔔 Ting ting! Một tràng pháo tay thật lớn cho **${currentUser?.name}** vì đã xuất sắc hoàn thành nhiệm vụ độ khó ${quest.rarity.toUpperCase()} trứ danh: **"${quest.title}"**!\n\nPhần thưởng khổng lồ +${quest.exp} EXP và +${quest.credits} Credits đã được chuyển vào ví. Ai sẽ là người tiếp theo chinh phục thử thách này đây? 😎`,
+                type: 'ai_update',
+                badge: 'Epic Achievement',
+                featuredUser: { name: currentUser?.name || '', title: currentUser?.title || '', avatar: currentUser?.avatar || '' },
+                expEarned: quest.exp
+              });
+            }
           }
         } else {
           get().addToast({ type: 'warning', title: 'Báo cáo bị từ chối', message: 'Vui lòng kiểm tra lại và gửi lại.' });
@@ -730,7 +757,7 @@ export const useAppStore = create<AppState>()(
       posts: [
         {
           id: 101,
-          author: { name: 'iKame AI Assistant', avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png', title: 'Hệ thống tự động' },
+          author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
           content: '🎊 Chúc mừng **Nguyễn Việt Dũng** đã chính thức hoàn thành chuỗi thử thách Onboarding! \n\nDũng hiện đang là PM tại team Platform. Hãy ghé qua Profile để gửi lời chào và làm quen với đồng nghiệp mới nhé! 🚀',
           time: '10 phút trước', likes: 45, comments: 12, isLiked: false, type: 'ai_update',
           badge: 'Onboarding Completed',
@@ -738,18 +765,31 @@ export const useAppStore = create<AppState>()(
         },
         {
           id: 1,
-          author: { name: 'HR Department', avatar: 'https://picsum.photos/seed/hr/150/150', title: 'Human Resources' },
-          content: '🎉 Chúc mừng team Tech đã hoàn thành xuất sắc dự án Alpha trước thời hạn 2 tuần! Chiều nay có tiệc trà tại pantry nhé!',
-          image: 'https://picsum.photos/seed/party/800/400',
-          time: '2 giờ trước', likes: 24, comments: 5, isLiked: false, type: 'announcement',
+          author: { name: 'Phòng PnOD', avatar: 'https://ui-avatars.com/api/?name=PnOD&background=8b5cf6&color=fff', title: 'People & Organization Dev' },
+          content: '📌 **[THÔNG BÁO] Cập nhật Chính sách Phúc lợi Mùa hè 2026**\n\nXin chào các iKamer! \n\nPhòng PnOD xin trân trọng thông báo về chương trình "Summer Vibes 2026" với nhiều cải tiến về chính sách làm việc linh hoạt (WFH) và phần thưởng đặc biệt iReward. Chi tiết các bạn vui lòng xem trên hệ thống iWiki mục [Chính sách] nhé!\n\nChúc cả nhà một tuần làm việc bùng nổ năng lượng! 🌞',
+          time: '30 phút trước', likes: 120, comments: 15, isLiked: false, type: 'announcement',
           isPinned: true
         },
         {
+          id: 2,
+          author: { name: 'HR Department', avatar: 'https://picsum.photos/seed/hr/150/150', title: 'Human Resources' },
+          content: '🎉 Chúc mừng team Tech đã hoàn thành xuất sắc dự án Alpha trước thời hạn 2 tuần! Chiều nay có tiệc trà tại pantry nhé!',
+          image: 'https://picsum.photos/seed/party/800/400',
+          time: '2 giờ trước', likes: 24, comments: 5, isLiked: false, type: 'announcement'
+        },
+        {
           id: 102,
-          author: { name: 'iKame AI Assistant', avatar: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png', title: 'Hệ thống tự động' },
-          content: '🔥 **Lê Văn C** vừa lập kỷ lục mới: Hoàn thành toàn bộ chuỗi nhiệm vụ Hàng tháng (Monthly Quest) chỉ trong 15 ngày! +500 Credits đã được cộng vào ví. Quá đỉnh! 💎',
+          author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
+          content: '🔥 **Lê Văn C** vừa lập kỷ lục mới: Hoàn thành toàn bộ chuỗi nhiệm vụ Hàng tháng (Monthly Quest) chỉ trong 15 ngày! +500 Credits đã được cộng vào ví.\n\nQuá đỉnh! Đồng nghiệp nào đang "bí" nhiệm vụ có thể xin ngay vài bí kíp từ chuyên gia C này nha! 💎',
           time: '3 giờ trước', likes: 18, comments: 3, isLiked: false, type: 'ai_update',
           badge: 'Monthly Achievement'
+        },
+        {
+          id: 103,
+          author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
+          content: '💡 **[Gợi ý iWiki từ Sen]** \n\nEm Sen thấy dạo này từ khóa "Quy trình xin cấp phép ngân sách" đang cực kỳ nóng rực trên iWiki. Ai còn đang loay hoay với các form mẫu thì đừng chần chừ nhấp ngay vào link bài viết [Hướng dẫn cấp phép ngân sách 2026] nhé. Tiết kiệm được cả đống thời gian đó! ⏱️',
+          time: 'Hôm qua', likes: 35, comments: 2, isLiked: false, type: 'ai_update',
+          badge: 'Trending Tips'
         }
       ],
       addPost: (p) => set(s => ({ posts: [{ ...p, id: Date.now(), time: 'Vừa xong', likes: 0, comments: 0, isLiked: false }, ...s.posts] })),
