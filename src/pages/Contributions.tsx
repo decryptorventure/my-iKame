@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useAppStore } from '../store';
-import { Star, CheckCircle2, ArrowRight, Plus, Clock, Trophy, Gift, Target, PlayCircle, Zap, Users, Flame, Crown, Gem, AlertCircle, GraduationCap, Calendar, Lock, Sparkles } from 'lucide-react';
+import { Star, CheckCircle2, ArrowRight, Plus, Clock, Trophy, Gift, Target, PlayCircle, Zap, Users, Flame, Crown, Gem, AlertCircle, GraduationCap, Calendar, Lock, Sparkles, PartyPopper, Rocket, Medal, Coins, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader, Modal, Field, inputClass, StatusBadge, EmptyState } from '../components/UI';
 import { cn } from '../utils';
@@ -24,7 +25,11 @@ const RARITY_CONFIG = {
 
 export const Contributions = () => {
   const { currentUser } = useAuthStore();
-  const { quests, submitQuestReport, approveQuest, addToast } = useAppStore();
+  const {
+    quests, submitQuestReport, approveQuest, addToast,
+    showOnboardingModal, setShowOnboardingModal
+  } = useAppStore();
+  const navigate = useNavigate();
   const isNewEmployee = currentUser?.role === 'new_employee';
   const defaultTab: TabId = isNewEmployee ? 'onboarding' : 'daily';
   const [activeTab, setActiveTab] = useState<TabId>(defaultTab);
@@ -34,7 +39,6 @@ export const Contributions = () => {
   const [reportDesc, setReportDesc] = useState('');
   const [showIntro, setShowIntro] = useState(true);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showRewardModal, setShowRewardModal] = useState(false);
   const [viewingQuest, setViewingQuest] = useState<typeof quests[0] | null>(null);
 
 
@@ -53,18 +57,12 @@ export const Contributions = () => {
   const onboardingPercent = totalOnboarding > 0 ? Math.round((completedOnboarding / totalOnboarding) * 100) : 0;
   const allOnboardingDone = completedOnboarding === totalOnboarding && totalOnboarding > 0;
 
-  // Auto-show reward modal when all onboarding done
+  // Removed local reward logic in favor of global store-triggered modal
+  /*
   React.useEffect(() => {
-    if (activeTab === 'onboarding' && allOnboardingDone && currentUser?.hasReceivedOnboardingReward && !showRewardModal) {
-      // We check if rewards were just given (logic in store happened)
-      // For this mock, we can trigger it once
-      const shown = localStorage.getItem('ikame_onboarding_reward_shown');
-      if (!shown) {
-        setShowRewardModal(true);
-        localStorage.setItem('ikame_onboarding_reward_shown', 'true');
-      }
-    }
+    ...
   }, [allOnboardingDone, currentUser?.hasReceivedOnboardingReward, activeTab]);
+  */
 
   const handleOpenSubmit = (quest: typeof quests[0]) => {
     if (quest.tabId === 'onboarding') {
@@ -457,56 +455,136 @@ export const Contributions = () => {
         )}
       </Modal>
 
-      {/* Newbie Reward Modal */}
-      <Modal isOpen={showRewardModal} onClose={() => setShowRewardModal(false)} title="" size="md" showClose={false}>
-        <div className="py-2 text-center">
-          <motion.div initial={{ scale: 0.5, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', damping: 12 }}>
-            <div className="w-24 h-24 bg-brand-gradient rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-brand-lg relative">
-              <Gift className="w-12 h-12 text-white" />
-              <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -top-2 -right-2 text-3xl">🎁</motion.div>
-            </div>
-          </motion.div>
-
-          <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">CHÚC MỪNG TÂN THỦ! 🎉</h2>
-          <p className="text-slate-500 mb-8 font-medium">Bạn đã xuất sắc hoàn thành tất cả nhiệm vụ Onboarding và chính thức trở thành một iKamer thực thụ!</p>
-
-          <div className="bg-slate-50 rounded-[2rem] p-6 mb-8 border border-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles className="w-12 h-12" /></div>
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Bạn nhận được bộ quà tặng:</h4>
-
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Sổ iKame 📓', color: 'bg-blue-100 text-blue-700' },
-                { label: 'Bút iKame 🖋️', color: 'bg-amber-100 text-amber-700' },
-                { label: 'Áo iKame 👕', color: 'bg-rose-100 text-rose-700' },
-                { label: 'Bóng bay Tân thủ 🎈', color: 'bg-purple-100 text-purple-700' }
-              ].map((gift, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
-                  className={cn("px-4 py-3 rounded-2xl font-bold text-xs flex items-center justify-center", gift.color)}>
-                  {gift.label}
+      {/* Onboarding Celebration Modal */}
+      <AnimatePresence>
+        {showOnboardingModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+              onClick={() => setShowOnboardingModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl"
+            >
+              {/* Top Banner with Confetti Effect */}
+              <div className="h-44 bg-brand-gradient relative flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+                <motion.div
+                  initial={{ rotate: -10, scale: 0.5, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', delay: 0.2 }}
+                  className="relative z-10 w-28 h-28 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-2xl border border-white/30"
+                >
+                  <PartyPopper className="w-14 h-14 text-white" />
                 </motion.div>
-              ))}
-            </div>
 
-            <div className="mt-6 pt-6 border-t border-slate-200 flex items-center justify-center gap-6">
-              <div className="text-center">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Cấp độ</p>
-                <p className="text-xl font-black text-emerald-600">Lv. 2</p>
+                {/* Floating Particles */}
+                {[...Array(15)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      y: [0, -100, 0],
+                      x: [0, (i % 2 === 0 ? 50 : -50), 0],
+                      opacity: [0, 1, 0],
+                    }}
+                    transition={{
+                      duration: 2 + Math.random() * 2,
+                      repeat: Infinity,
+                      delay: Math.random() * 2,
+                    }}
+                    className="absolute w-2 h-2 rounded-full bg-white/40"
+                    style={{
+                      left: `${10 + Math.random() * 80}%`,
+                      top: `${10 + Math.random() * 80}%`,
+                    }}
+                  />
+                ))}
               </div>
-              <div className="w-px h-8 bg-slate-200" />
-              <div className="text-center">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">iKame Coin</p>
-                <p className="text-xl font-black text-amber-600">+100</p>
+
+              <div className="p-8 text-center bg-white relative">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <span className="inline-block px-4 py-1.5 bg-brand-50 text-brand-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 border border-brand-100">
+                    Thành tựu Onboarding
+                  </span>
+                  <h2 className="text-3xl font-black text-slate-900 mb-2 leading-tight">
+                    Chúc mừng iKamer <br /> chính thức! 🎉
+                  </h2>
+                  <p className="text-slate-500 font-medium mb-8 px-4 text-sm">
+                    Bạn đã xuất sắc hoàn thành tất cả nhiệm vụ tân thủ. Hãy nhận bộ quà tặng chào mừng từ gia đình iKame nhé!
+                  </p>
+                </motion.div>
+
+                <div className="space-y-6">
+                  {/* Phase 1: Virtual Rewards */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { label: 'Thưởng', value: '+200', sub: 'Credits', icon: Coins, color: 'text-amber-500', bg: 'bg-amber-50' },
+                      { label: 'Cấp độ', value: 'Lv. 2', sub: 'Mở khóa', icon: Rocket, color: 'text-brand-500', bg: 'bg-brand-50' },
+                      { label: 'Danh hiệu', value: 'Tân binh', sub: 'Badge', icon: Medal, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                    ].map((reward, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 + i * 0.1 }}
+                        className={cn("p-4 rounded-3xl border border-transparent shadow-sm", reward.bg)}
+                      >
+                        <reward.icon className={cn("w-5 h-5 mx-auto mb-2", reward.color)} />
+                        <p className="text-base font-black text-slate-900 leading-none">{reward.value}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 tracking-wider">{reward.sub}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Phase 2: Physical Gifts */}
+                  <div className="bg-slate-50 rounded-[2rem] p-5 border border-slate-100">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">Bộ quà tặng hiện vật</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: 'Sổ iKame 📓', color: 'bg-blue-100 text-blue-700' },
+                        { label: 'Bút iKame 🖋️', color: 'bg-amber-100 text-amber-500' },
+                        { label: 'Áo thun iKame 👕', color: 'bg-rose-100 text-rose-500' },
+                        { label: 'Bóng bay Tân thủ 🎈', color: 'bg-purple-100 text-purple-500' }
+                      ].map((gift, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1 + i * 0.1 }}
+                          className={cn("px-4 py-2.5 rounded-2xl font-black text-[11px] flex items-center justify-center gap-2 shadow-sm border border-white", gift.color)}
+                        >
+                          {gift.label}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.5 }}
+                  onClick={() => setShowOnboardingModal(false)}
+                  className="w-full mt-8 py-4 bg-brand-gradient text-white rounded-2xl font-black shadow-brand-lg hover:pr-8 transition-all group flex items-center justify-center gap-2"
+                >
+                  Tuyệt vời! Tiếp tục hành trình
+                  <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           </div>
-
-          <button onClick={() => setShowRewardModal(false)}
-            className="w-full py-4 bg-brand-gradient text-white rounded-2xl font-black shadow-brand-lg hover:scale-[1.02] active:scale-95 transition-all">
-            NHẬN QUÀ & KHÁM PHÁ TIẾP
-          </button>
-        </div>
-      </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

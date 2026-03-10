@@ -14,8 +14,7 @@ export const Dashboard = () => {
   const { currentUser } = useAuthStore();
   const {
     addExp, addToast, checkIn, todayCheckedIn, celebrations, sendWish, quests,
-    attendanceRecords, posts, addPost, toggleLikePost, users, badges,
-    showOnboardingModal, setShowOnboardingModal
+    attendanceRecords, posts, addPost, toggleLikePost, users, badges
   } = useAppStore();
   const [newPostContent, setNewPostContent] = useState('');
   const [leaderboardType, setLeaderboardType] = useState<'personal' | 'team'>('personal');
@@ -620,112 +619,6 @@ export const Dashboard = () => {
       </Modal>
 
       <PublicProfileModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
-
-      {/* Onboarding Celebration Modal */}
-      <AnimatePresence>
-        {showOnboardingModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
-              onClick={() => setShowOnboardingModal(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] overflow-hidden shadow-2xl"
-            >
-              {/* Top Banner with Confetti Effect (CSS) */}
-              <div className="h-48 bg-brand-gradient relative flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-                <motion.div
-                  initial={{ rotate: -10, scale: 0.5, opacity: 0 }}
-                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', delay: 0.2 }}
-                  className="relative z-10 w-32 h-32 bg-white/20 backdrop-blur-xl rounded-3xl flex items-center justify-center shadow-2xl border border-white/30"
-                >
-                  <PartyPopper className="w-16 h-16 text-white" />
-                </motion.div>
-
-                {/* Floating Particles */}
-                {[...Array(12)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{
-                      y: [0, -100, 0],
-                      x: [0, (i % 2 === 0 ? 50 : -50), 0],
-                      opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 2 + Math.random() * 2,
-                      repeat: Infinity,
-                      delay: Math.random() * 2,
-                    }}
-                    className="absolute w-2 h-2 rounded-full bg-white/40"
-                    style={{
-                      left: `${10 + Math.random() * 80}%`,
-                      top: `${10 + Math.random() * 80}%`,
-                    }}
-                  />
-                ))}
-              </div>
-
-              <div className="p-8 text-center">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <span className="inline-block px-4 py-1.5 bg-brand-50 text-brand-600 rounded-full text-xs font-black uppercase tracking-widest mb-4 border border-brand-100">
-                    Thành tựu mới
-                  </span>
-                  <h2 className="text-3xl font-black text-slate-900 mb-2 leading-tight">
-                    Chào mừng iKamer <br /> chính thức!
-                  </h2>
-                  <p className="text-slate-500 font-medium mb-8 px-4">
-                    Bạn đã hoàn thành xuất sắc chuỗi thử thách Onboarding. Cảm ơn vì đã trở thành một phần của iKame!
-                  </p>
-                </motion.div>
-
-                {/* Rewards Grid */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  {[
-                    { label: 'Thưởng', value: '+200', sub: 'Credits', icon: Coins, color: 'text-amber-500', bg: 'bg-amber-50' },
-                    { label: 'Cấp độ', value: 'Lv. 2', sub: 'Mở khóa', icon: Rocket, color: 'text-brand-500', bg: 'bg-brand-50' },
-                    { label: 'Danh hiệu', value: 'Tân binh', sub: 'Badge', icon: Medal, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                  ].map((reward, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 + i * 0.1 }}
-                      className={cn("p-4 rounded-3xl border border-transparent", reward.bg)}
-                    >
-                      <reward.icon className={cn("w-6 h-6 mx-auto mb-2", reward.color)} />
-                      <p className="text-lg font-black text-slate-900 leading-none">{reward.value}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-wider">{reward.sub}</p>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1 }}
-                  onClick={() => setShowOnboardingModal(false)}
-                  className="w-full py-4 bg-brand-gradient text-white rounded-2xl font-black shadow-brand-lg hover:pr-8 transition-all group flex items-center justify-center gap-2"
-                >
-                  Khám phá My iKame ngay
-                  <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                </motion.button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
