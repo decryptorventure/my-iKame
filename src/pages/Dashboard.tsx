@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useAppStore } from '../store';
 import { Trophy, Star, TrendingUp, Clock, Heart, MessageCircle, Share2, Image as ImageIcon, Smile, Send, Calendar, Award, MoreHorizontal, Zap, ArrowUpRight, Coins, Flame, Sparkles, ChevronRight, CheckCircle2, Users, Cake, Medal, PartyPopper, Rocket } from 'lucide-react';
 import { format } from 'date-fns';
@@ -9,6 +10,7 @@ import { PublicProfileModal } from '../components/PublicProfileModal';
 import { AIAssistantWidget } from '../components/AIAssistantWidget';
 
 export const Dashboard = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuthStore();
   const {
     addExp, addToast, checkIn, todayCheckedIn, celebrations, sendWish, quests,
@@ -312,7 +314,7 @@ export const Dashboard = () => {
                     </div>
                   ))}
                 </div>
-                <button onClick={() => window.location.href = '/iquest'} className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-brand-600 text-white font-bold text-sm rounded-xl hover:bg-brand-700 transition active:scale-95">
+                <button onClick={() => navigate('/iquest')} className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-brand-600 text-white font-bold text-sm rounded-xl hover:bg-brand-700 transition active:scale-95">
                   <Award className="w-4 h-4" /> Tham gia iQuest để xem chi tiết
                 </button>
               </div>

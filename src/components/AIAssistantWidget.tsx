@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuthStore, useAppStore } from '../store';
 import { Sparkles, CheckCircle2, Award, Clock, Star, ArrowRight, BellRing, Rocket } from 'lucide-react';
 import { cn } from '../utils';
 
 export const AIAssistantWidget = () => {
+    const navigate = useNavigate();
     const { currentUser } = useAuthStore();
     const { quests, todayCheckedIn, checkIn, addToast } = useAppStore();
     const [activeSuggestion, setActiveSuggestion] = useState<number>(0);
@@ -201,12 +203,12 @@ export const AIAssistantWidget = () => {
                                     {currentSuggestion.actionText} <ArrowRight className="w-3.5 h-3.5 transition-transform" />
                                 </button>
                             ) : (
-                                <a
-                                    href={currentSuggestion.actionLink}
+                                <button
+                                    onClick={() => navigate(currentSuggestion.actionLink)}
                                     className={cn("inline-flex items-center gap-1.5 text-xs font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border ring-1 transition-all hover:pr-4", currentSuggestion.borderColor, currentSuggestion.textColor, "ring-white/50")}
                                 >
                                     {currentSuggestion.actionText} <ArrowRight className="w-3.5 h-3.5 transition-transform" />
-                                </a>
+                                </button>
                             )}
                         </div>
                     </motion.div>
