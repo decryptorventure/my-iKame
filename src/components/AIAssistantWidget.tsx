@@ -93,6 +93,13 @@ export const AIAssistantWidget = () => {
 
     const suggestions = getSuggestions();
 
+    // Reset active suggestion if it goes out of bounds due to list changes
+    useEffect(() => {
+        if (activeSuggestion >= suggestions.length && suggestions.length > 0) {
+            setActiveSuggestion(0);
+        }
+    }, [suggestions.length, activeSuggestion]);
+
     // Auto rotate suggestions
     useEffect(() => {
         if (suggestions.length <= 1) return;
@@ -104,7 +111,9 @@ export const AIAssistantWidget = () => {
 
     if (suggestions.length === 0) return null;
 
-    const currentSuggestion = suggestions[activeSuggestion];
+    // Use a safe index for rendering
+    const safeIndex = activeSuggestion >= suggestions.length ? 0 : activeSuggestion;
+    const currentSuggestion = suggestions[safeIndex];
 
     return (
         <motion.div
