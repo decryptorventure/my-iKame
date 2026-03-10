@@ -25,8 +25,8 @@ export const MascotTooltip = ({
                 className="w-full h-full p-0 m-0"
             >
                 {/* Mascot Avatar positioned overlapping the card */}
-                <div className="absolute -top-6 -left-4 w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10 animate-bounce-slow">
-                    <Sparkles className="w-8 h-8 text-white" />
+                <div className="absolute -top-6 -left-4 w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-white z-10 animate-bounce-slow overflow-hidden">
+                    <img src="/logo.png" className="w-12 h-12 object-contain" alt="Mascot" />
                 </div>
 
                 <div className="pt-8 pb-5 px-6">

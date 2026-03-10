@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils';
 import { Modal } from '../components/UI';
 import { PublicProfileModal } from '../components/PublicProfileModal';
+import { AIAssistantWidget } from '../components/AIAssistantWidget';
 
 export const Dashboard = () => {
   const { currentUser } = useAuthStore();
@@ -270,7 +271,7 @@ export const Dashboard = () => {
                     <Rocket className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-slate-900">Bắt đầu hành trình iKame! 🚀</h3>
+                    <h3 className="font-extrabold text-slate-900">Bắt đầu hành trình My iKame! 🚀</h3>
                     <p className="text-xs text-brand-600 font-medium mt-0.5">Nhiệm vụ Onboarding dành riêng cho bạn</p>
                   </div>
                 </div>
@@ -491,51 +492,8 @@ export const Dashboard = () => {
 
         {/* Right */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Onboarding Progress */}
-          {isNewEmployee && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              className="bg-[#FFF9F2] rounded-[2rem] p-7 border border-[#FFEAD1] shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                <Rocket className="w-20 h-20 text-[#FF6B00]" />
-              </div>
-
-              <h3 className="font-extrabold mb-6 text-[11px] uppercase tracking-[0.2em] text-[#FF9E58] flex items-center gap-2">
-                <Award className="w-4 h-4" /> Onboarding
-              </h3>
-
-              <div className="text-center mb-6">
-                <p className="text-6xl font-black text-[#FF6B00] leading-none tracking-tight">100%</p>
-                <p className="text-xs text-slate-500 font-bold mt-3 opacity-80">{completedOnboarding}/{totalOnboarding} nhiệm vụ đã hoàn thành</p>
-              </div>
-
-              <div className="w-full bg-[#FFD7A3]/30 rounded-full h-3.5 mb-8 p-0.5">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${onboardingPercent}%` }}
-                  transition={{ duration: 1.5, ease: 'easeOut' }}
-                  className="bg-[#FF6B00] h-full rounded-full shadow-lg shadow-orange-200/50" />
-              </div>
-
-              <div className="space-y-3 mb-8">
-                {onboardingQuests.slice(0, 4).map(q => (
-                  <div key={q.id} className="flex items-center gap-3 text-[13px]">
-                    <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2",
-                      q.status === 'completed' ? "bg-white border-emerald-400 text-emerald-500" : "bg-white border-slate-200 text-transparent"
-                    )}>
-                      <CheckCircle2 className="w-3 h-3 stroke-[3]" />
-                    </div>
-                    <span className={cn(
-                      "truncate font-bold tracking-tight",
-                      q.status === 'completed' ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-600'
-                    )}>{q.title}</span>
-                  </div>
-                ))}
-              </div>
-
-              <a href="/iquest" className="w-full flex items-center justify-center gap-2 py-4 bg-[#F15A24] text-white rounded-2xl font-black text-sm hover:bg-[#D9481B] transition-all shadow-lg shadow-orange-200 active:scale-95 group">
-                Làm nhiệm vụ tiếp <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-            </motion.div>
-          )}
+          {/* AI Assistant Widget */}
+          <AIAssistantWidget />
 
           {/* Events */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm">

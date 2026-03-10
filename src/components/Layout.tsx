@@ -379,7 +379,7 @@ const AIMascotChat = () => {
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }]
         })),
-        systemInstruction: `Bạn là iKame Assistant, trợ lý ảo thông minh của My iKame.
+        systemInstruction: `Bạn là My iKame Assistant, trợ lý ảo thông minh của My iKame.
         My iKame là hub kết nối nhân viên, tập trung vào truyền thông nội bộ, onboarding và gamification.
         Tính năng chính: iQuest (nhiệm vụ & onboarding), iReward (đổi quà), Kudos (ghi nhận), Leaderboard.
         Các app riêng: iCheck (chấm công), iGoal (OKRs), iWiki (tài liệu) - được điều hướng từ My iKame.
@@ -402,8 +402,8 @@ const AIMascotChat = () => {
     <>
       <motion.button onClick={() => setIsOpen(!isOpen)} whileTap={{ scale: 0.9 }}
         className={cn("fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300",
-          isOpen ? "bg-slate-700 hover:bg-slate-800" : "bg-brand-gradient hover:scale-105 shadow-brand-lg animate-pulse-glow")}>
-        {isOpen ? <X className="w-6 h-6 text-white" /> : <Bot className="w-7 h-7 text-white" />}
+          isOpen ? "bg-slate-700 hover:bg-slate-800" : "bg-slate-800 hover:bg-slate-900 shadow-slate-900/20")}>
+        {isOpen ? <X className="w-6 h-6 text-white" /> : <img src="/logo.png" className="w-10 h-10 object-contain drop-shadow-md rounded-lg" />}
       </motion.button>
 
       <AnimatePresence>
@@ -419,7 +419,7 @@ const AIMascotChat = () => {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm">iKame Assistant</h3>
+                <h3 className="font-bold text-white text-sm">My iKame Assistant</h3>
                 <p className="text-orange-100 text-[11px] font-medium flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" /> Trực tuyến
                 </p>
@@ -542,10 +542,8 @@ export const Layout = ({ children }: LayoutProps) => {
         {/* Logo */}
         <div className="h-16 flex items-center px-5 justify-between border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-brand-gradient rounded-xl flex items-center justify-center shadow-brand">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight text-gradient">iKame</span>
+            <img src="/logo.png" className="w-9 h-9 object-contain rounded-lg" alt="Logo" />
+            <span className="font-extrabold text-lg tracking-tight text-gradient">My iKame</span>
           </div>
           <button className="md:hidden p-2 text-slate-400 hover:bg-slate-100 rounded-lg" onClick={() => setIsMobileMenuOpen(false)}>
             <X className="w-5 h-5" />

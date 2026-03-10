@@ -7,8 +7,8 @@ import { MascotTooltip } from './MascotTooltip';
 const NEWBIE_STEPS: Step[] = [
     {
         target: 'body',
-        content: <p>Xin chào! Tôi là Trợ lý iKame.<br />Chào mừng bạn đến với Super App nội bộ. Hãy để tôi hướng dẫn bạn một vòng nhé!</p>,
-        title: 'Chào mừng đến với iKame!',
+        content: <p>Xin chào! Tôi là Trợ lý My iKame.<br />Chào mừng bạn đến với Super App nội bộ. Hãy để tôi hướng dẫn bạn một vòng nhé!</p>,
+        title: 'Chào mừng đến với My iKame!',
         placement: 'center',
         disableBeacon: true,
     },
