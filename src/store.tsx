@@ -403,6 +403,9 @@ interface AppState {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
 
+  showOnboardingModal: boolean;
+  setShowOnboardingModal: (show: boolean) => void;
+
   // Settings
   theme: 'light' | 'dark';
   language: 'vi' | 'en';
@@ -731,6 +734,9 @@ export const useAppStore = create<AppState>()(
       searchQuery: '',
       setSearchQuery: (q) => set({ searchQuery: q }),
 
+      showOnboardingModal: false,
+      setShowOnboardingModal: (show) => set({ showOnboardingModal: show }),
+
       theme: 'light',
       language: 'vi',
       toggleTheme: () => set(s => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
@@ -743,14 +749,38 @@ export const useAppStore = create<AppState>()(
         const total = onboardingQuests.length;
         const auth = useAuthStore.getState();
 
+        // Use a small delay to ensure cumulative state is settled
         if (total > 0 && completed === total && !auth.currentUser?.hasReceivedOnboardingReward) {
+          console.log('Onboarding COMPLETE triggered!');
           // All done!
           auth.updateUser({
-            level: Math.max(auth.currentUser?.level || 1, 2),
-            credits: (auth.currentUser?.credits || 0) + 100,
-            hasReceivedOnboardingReward: true
+            level: Math.round(Math.max(auth.currentUser?.level || 1, 2)), // Ensure at least Level 2
+            credits: (auth.currentUser?.credits || 0) + 200,
+            hasReceivedOnboardingReward: true,
+            unlockedBadges: Array.from(new Set([...(auth.currentUser?.unlockedBadges || []), 'b1'])),
+            equippedBadge: 'b1'
           });
-          get().addToast({ type: 'levelup', title: '🎁 Quà tân thủ!', message: 'Chúc mừng bạn đã hoàn thành Onboarding!' });
+
+          set({ showOnboardingModal: true });
+
+          get().addToast({
+            type: 'levelup',
+            title: '🎉 Hoàn thành Onboarding!',
+            message: 'Chúc mừng iKamer mới! Nhận ngay 200 Credits thưởng.'
+          });
+
+          // Also add a post to the feed
+          get().addPost({
+            author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
+            content: `🎊 Chúc mừng **${auth.currentUser.name}** đã chính thức hoàn thành chuỗi thử thách Onboarding! \n\nHãy cùng gửi lời chào nồng nhiệt nhất tới thành viên mới của gia đình iKame nhé! 🚀`,
+            type: 'ai_update',
+            badge: 'New Member',
+            featuredUser: {
+              name: auth.currentUser.name,
+              title: auth.currentUser.title,
+              avatar: auth.currentUser.avatar
+            }
+          });
         }
       },
 
