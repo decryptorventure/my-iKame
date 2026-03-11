@@ -82,7 +82,14 @@ export const Dashboard = () => {
     return true;
   });
 
-  const handleLike = (id: number) => toggleLikePost(id);
+  const handleLike = (id: number) => {
+    toggleLikePost(id);
+    // Track official onboarding quest (ID 27 - Tương tác Newsfeed)
+    const quest27 = quests.find(q => q.id === 27);
+    if (quest27 && quest27.status === 'pending') {
+      useAppStore.getState().approveQuest(27, true);
+    }
+  };
   const handlePost = () => {
     if (!newPostContent.trim()) return;
     addPost({
@@ -124,22 +131,46 @@ export const Dashboard = () => {
     checkIn();
   };
 
-  // Check for onboarding completion on mount
+  const onboardingTabId = currentUser?.role === 'new_employee' ? 'onboarding' : 'onboarding_official';
+  const onboardingQuests = quests.filter(q => q.tabId === onboardingTabId);
+  const completedOnboarding = onboardingQuests.filter(q => q.status === 'completed').length;
+  const totalOnboarding = onboardingQuests.length;
+  const onboardingPercent = totalOnboarding > 0 ? Math.round((completedOnboarding / totalOnboarding) * 100) : 0;
+  const showOnboarding = onboardingPercent < 100 && (currentUser?.role === 'new_employee' || currentUser?.role === 'employee' || currentUser?.role === 'manager');
+
+  // Check for onboarding completion on mount & Ensure quests exist
   React.useEffect(() => {
-    if (isNewEmployee) {
-      useAppStore.getState().checkOnboardingCompletion();
+    const role = currentUser?.role;
+    if (role === 'new_employee' || role === 'employee' || role === 'manager') {
+      const store = useAppStore.getState();
+      
+      // Auto-inject missing system quests if they don't exist
+      const INITIAL_SYSTEM_QUESTS = [
+        { id: 24, title: 'iCheck đầu tiên', desc: 'Thực hiện chấm công lần đầu trên hệ thống My iKame.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hệ thống', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Sử dụng tính năng iCheck trên Dashboard hoặc App mobile để ghi nhận ngày công.' },
+        { id: 25, title: 'Đạt mốc Level 2', desc: 'Tích lũy EXP từ các hoạt động để thăng cấp lên Level 2.', exp: 100, credits: 20, progress: 0, target: 2, status: 'pending', subCategory: 'Cá nhân', rarity: 'rare', tabId: 'onboarding_official', howToComplete: 'Tham gia các hoạt động như iCheck, tương tác bải viết để nhận EXP và thăng cấp.' },
+        { id: 26, title: 'Gửi lời chúc mừng', desc: 'Gửi lời chúc Sinh nhật hoặc Thâm niên đến đồng nghiệp.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Tìm các mục Sinh nhật/Thâm niên trên Dashboard và nhấn gửi lời chúc.' },
+        { id: 27, title: 'Tương tác Newsfeed', desc: 'Like hoặc bình luận vào bài viết của đồng nghiệp.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Dạo một vòng quanh Newsfeed và để lại tim hoặc bình luận cho một bài viết bất kỳ.' },
+        { id: 28, title: 'Hoàn thiện Profile', desc: 'Cập nhật đầy đủ thông tin cá nhân và ảnh đại diện.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Cá nhân', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Truy cập trang Cá nhân và cập nhật các thông tin còn thiếu.' },
+      ];
+
+      const missingQuests = INITIAL_SYSTEM_QUESTS.filter(sysQ => !store.quests.find(q => q.id === sysQ.id));
+      if (missingQuests.length > 0) {
+        useAppStore.setState({ quests: [...store.quests, ...missingQuests as any] });
+        store.addToast({ 
+          type: 'info', 
+          title: 'Hệ thống đã cập nhật', 
+          message: 'Dành riêng cho iKamer cũ: Chuỗi nhiệm vụ "Khám phá My iKame" đã sẵn sàng!',
+          duration: 5000
+        });
+      }
+
+      store.checkOnboardingCompletion();
     }
-  }, [isNewEmployee]);
+  }, [currentUser, quests.length, onboardingPercent]); 
 
   // birthday & anniversary lists
   const birthdayCelebrations = celebrations.filter(c => c.type === 'birthday');
   const anniversaryCelebrations = celebrations.filter(c => c.type === 'anniversary');
-
-  // Onboarding progress
-  const onboardingQuests = quests.filter(q => q.tabId === 'onboarding');
-  const completedOnboarding = onboardingQuests.filter(q => q.status === 'completed').length;
-  const totalOnboarding = onboardingQuests.length;
-  const onboardingPercent = totalOnboarding > 0 ? Math.round((completedOnboarding / totalOnboarding) * 100) : 0;
 
   const computeStreak = () => {
     let streak = 0;
@@ -183,7 +214,7 @@ export const Dashboard = () => {
           </motion.div>
 
         {/* Onboarding Guide in Feed - Compacted version */}
-        {isNewEmployee && onboardingPercent < 100 && (
+        {showOnboarding && onboardingQuests.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="bg-brand-50 border border-brand-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="p-4 sm:p-5">
@@ -193,8 +224,20 @@ export const Dashboard = () => {
                     <Rocket className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 text-[15px] leading-tight uppercase tracking-tight">Hành trình Tân thủ 🚀</h3>
-                    <p className="text-[10px] text-brand-600 font-medium uppercase tracking-wider">Nhiệm vụ Onboarding của bạn</p>
+                    <h3 className="font-semibold text-slate-900 text-[15px] leading-tight uppercase tracking-tight">
+                      {currentUser?.role === 'new_employee' ? 'Hành trình Tân thủ 🚀' : 'Khám phá Hệ thống My iKame 🚀'}
+                    </h3>
+                    <p className="text-[10px] text-brand-600 font-medium uppercase tracking-wider">
+                      {currentUser?.role === 'new_employee' ? 'Hướng dẫn:' : 'Gợi ý hành động:'}
+                    </p>
+                    <p className="text-[13px] text-slate-700 leading-relaxed font-medium">
+                      {onboardingPercent === 0 
+                        ? (currentUser?.role === 'new_employee' ? 'Bắt đầu bằng cách tham gia Day One Tour cùng HR nhé!' : 'Thử nhấn "iCheck" ngay trên Dashboard để bắt đầu trải nghiệm!')
+                        : `Bạn đã hoàn thành ${completedOnboarding}/${totalOnboarding} nhiệm vụ. Tiếp tục nào!`}
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                       <button onClick={() => navigate('/iquest')} className="text-[11px] font-bold text-brand-600 bg-brand-100/50 px-2 py-1 rounded-lg hover:bg-brand-100 transition-colors">Xem chi tiết nhiệm vụ</button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 bg-white/60 px-2 py-0.5 rounded-lg border border-brand-100">

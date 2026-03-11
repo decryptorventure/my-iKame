@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader, Modal, Field, inputClass, StatusBadge, EmptyState } from '../components/UI';
 import { cn } from '../utils';
 
-type TabId = 'daily' | 'weekly' | 'monthly' | 'onboarding' | 'events';
+type TabId = 'daily' | 'weekly' | 'monthly' | 'onboarding' | 'onboarding_official' | 'events';
 
 const TABS: { id: TabId; label: string; icon: string }[] = [
   { id: 'onboarding', label: 'Onboarding', icon: '🎓' },
@@ -41,6 +41,26 @@ export const Contributions = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewingQuest, setViewingQuest] = useState<typeof quests[0] | null>(null);
 
+  // Auto-inject missing system quests if they don't exist
+  React.useEffect(() => {
+    const role = currentUser?.role;
+    if (role === 'new_employee' || role === 'employee' || role === 'manager') {
+      const store = useAppStore.getState();
+      const INITIAL_SYSTEM_QUESTS = [
+        { id: 24, title: 'iCheck đầu tiên', desc: 'Thực hiện chấm công lần đầu trên hệ thống My iKame.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hệ thống', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Sử dụng tính năng iCheck trên Dashboard hoặc App mobile để ghi nhận ngày công.' },
+        { id: 25, title: 'Đạt mốc Level 2', desc: 'Tích lũy EXP từ các hoạt động để thăng cấp lên Level 2.', exp: 100, credits: 20, progress: 0, target: 2, status: 'pending', subCategory: 'Cá nhân', rarity: 'rare', tabId: 'onboarding_official', howToComplete: 'Tham gia các hoạt động như iCheck, tương tác bải viết để nhận EXP và thăng cấp.' },
+        { id: 26, title: 'Gửi lời chúc mừng', desc: 'Gửi lời chúc Sinh nhật hoặc Thâm niên đến đồng nghiệp.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Tìm các mục Sinh nhật/Thâm niên trên Dashboard và nhấn gửi lời chúc.' },
+        { id: 27, title: 'Tương tác Newsfeed', desc: 'Like hoặc bình luận vào bài viết của đồng nghiệp.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Dạo một vòng quanh Newsfeed và để lại tim hoặc bình luận cho một bài viết bất kỳ.' },
+        { id: 28, title: 'Hoàn thiện Profile', desc: 'Cập nhật đầy đủ thông tin cá nhân và ảnh đại diện.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Cá nhân', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Truy cập trang Cá nhân và cập nhật các thông tin còn thiếu.' },
+      ];
+
+      const missingQuests = INITIAL_SYSTEM_QUESTS.filter(sysQ => !store.quests.find(q => q.id === sysQ.id));
+      if (missingQuests.length > 0) {
+        useAppStore.setState({ quests: [...store.quests, ...missingQuests as any] });
+      }
+    }
+  }, [currentUser]);
+
   // Open detail modal from query param
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -57,14 +77,18 @@ export const Contributions = () => {
 
 
   const isManager = currentUser?.role === 'manager' || currentUser?.role === 'admin';
-  const filtered = quests.filter(q => q.tabId === activeTab);
+  
+  // Dynamic Tab ID for Onboarding based on role
+  const effectiveTab = activeTab === 'onboarding' && !isNewEmployee ? 'onboarding_official' : activeTab;
+  const filtered = quests.filter(q => q.tabId === effectiveTab);
   const pendingApproval = quests.filter(q => q.status === 'submitted');
 
   const completedCount = quests.filter(q => q.status === 'completed').length;
   const milestoneTarget = quests.length;
   const completedEXP = quests.filter(q => q.status === 'completed').reduce((a, q) => a + q.exp, 0);
 
-  const onboardingQuests = quests.filter(q => q.tabId === 'onboarding');
+  const onboardingTabId = isNewEmployee ? 'onboarding' : 'onboarding_official';
+  const onboardingQuests = quests.filter(q => q.tabId === onboardingTabId);
   const completedOnboarding = onboardingQuests.filter(q => q.status === 'completed').length;
   const totalOnboarding = onboardingQuests.length;
   const onboardingPercent = totalOnboarding > 0 ? Math.round((completedOnboarding / totalOnboarding) * 100) : 0;
@@ -219,8 +243,14 @@ export const Contributions = () => {
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 text-lg">Hành trình Tân thủ 🚀</h3>
-              <p className="text-sm text-slate-500">Hoàn thành tất cả nhiệm vụ để bắt đầu hành trình tuyệt vời tại iKame!</p>
+              <h3 className="font-extrabold text-slate-900 text-lg">
+                {isNewEmployee ? 'Hành trình Tân thủ 🚀' : 'Khám phá Hệ thống My iKame 🚀'}
+              </h3>
+              <p className="text-sm text-slate-500">
+                {isNewEmployee 
+                  ? 'Hoàn thành tất cả nhiệm vụ để bắt đầu hành trình tuyệt vời tại iKame!'
+                  : 'Hoàn thành các thử thách để làm chủ hệ thống và nhận thưởng hấp dẫn!'}
+              </p>
             </div>
           </div>
 
@@ -310,7 +340,7 @@ export const Contributions = () => {
                   {(canSubmit || canRetry) && (
                     <button onClick={(e) => { e.stopPropagation(); handleOpenSubmit(quest); }}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition-colors active:scale-95">
-                      <PlayCircle className="w-3.5 h-3.5" /> {quest.tabId === 'onboarding' ? 'Hoàn thành' : (canRetry ? 'Nộp lại' : 'Nộp báo cáo')}
+                      <PlayCircle className="w-3.5 h-3.5" /> {(quest.tabId === 'onboarding' || quest.tabId === 'onboarding_official') ? 'Xác nhận' : (canRetry ? 'Nộp lại' : 'Nộp báo cáo')}
                     </button>
                   )}
                   {quest.status === 'completed' && (
@@ -462,7 +492,7 @@ export const Contributions = () => {
             <button onClick={() => { setShowDetailModal(false); if (viewingQuest.status === 'pending' || viewingQuest.status === 'in-progress' || viewingQuest.status === 'rejected') handleOpenSubmit(viewingQuest); }}
               className="w-full py-3.5 bg-brand-gradient text-white rounded-2xl font-bold shadow-brand-lg hover:shadow-brand transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
               disabled={viewingQuest.status === 'completed' || viewingQuest.status === 'submitted'}>
-              {viewingQuest.status === 'completed' ? 'Đã hoàn thành' : viewingQuest.status === 'submitted' ? 'Đang chờ duyệt' : viewingQuest.tabId === 'onboarding' ? 'Xác nhận hoàn thành' : 'Nộp báo cáo ngay'}
+              {viewingQuest.status === 'completed' ? 'Đã hoàn thành' : viewingQuest.status === 'submitted' ? 'Đang chờ duyệt' : ['onboarding', 'onboarding_official'].includes(viewingQuest.tabId) ? 'Xác nhận hoàn thành' : 'Nộp báo cáo ngay'}
             </button>
           </div>
         )}
@@ -527,13 +557,15 @@ export const Contributions = () => {
                   transition={{ delay: 0.4 }}
                 >
                   <span className="inline-block px-4 py-1.5 bg-brand-50 text-brand-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 border border-brand-100">
-                    Thành tựu Onboarding
+                    {currentUser?.role === 'new_employee' ? 'Thành tựu Onboarding' : 'Khám phá Hệ thống'}
                   </span>
                   <h2 className="text-3xl font-black text-slate-900 mb-2 leading-tight">
-                    Chúc mừng iKamer <br /> chính thức! 🎉
+                    {currentUser?.role === 'new_employee' ? 'Chào mừng iKamer mới! 🎉' : 'Tuyệt vời iKamer! 🎉'}
                   </h2>
                   <p className="text-slate-500 font-medium mb-8 px-4 text-sm">
-                    Bạn đã xuất sắc hoàn thành tất cả nhiệm vụ tân thủ. Hãy nhận bộ quà tặng chào mừng từ gia đình iKame nhé!
+                    {currentUser?.role === 'new_employee' 
+                      ? 'Bạn đã xuất sắc hoàn thành tất cả nhiệm vụ tân thủ. Hãy nhận bộ quà tặng chào mừng từ gia đình iKame nhé!'
+                      : 'Bạn đã xuất sắc làm quen với mọi tính năng trên My iKame. Hãy nhận phần thưởng ghi nhận sự nhiệt huyết của bạn!'}
                   </p>
                 </motion.div>
 
@@ -542,8 +574,8 @@ export const Contributions = () => {
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { label: 'Thưởng', value: '+200', sub: 'Credits', icon: Coins, color: 'text-amber-500', bg: 'bg-amber-50' },
-                      { label: 'Cấp độ', value: 'Lv. 2', sub: 'Mở khóa', icon: Rocket, color: 'text-brand-500', bg: 'bg-brand-50' },
-                      { label: 'Danh hiệu', value: 'Tân binh', sub: 'Badge', icon: Medal, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                      { label: 'Cấp độ', value: currentUser?.role === 'new_employee' ? 'Lv. 2' : `Lv. ${currentUser?.level}`, sub: 'Mở khóa', icon: Rocket, color: 'text-brand-500', bg: 'bg-brand-50' },
+                      { label: 'Danh hiệu', value: currentUser?.role === 'new_employee' ? 'Tân binh' : 'Master', sub: 'Badge', icon: Medal, color: 'text-emerald-500', bg: 'bg-emerald-50' },
                     ].map((reward, i) => (
                       <motion.div
                         key={i}
@@ -559,28 +591,30 @@ export const Contributions = () => {
                     ))}
                   </div>
 
-                  {/* Phase 2: Physical Gifts */}
-                  <div className="bg-slate-50 rounded-[2rem] p-5 border border-slate-100">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">Bộ quà tặng hiện vật</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { label: 'Sổ iKame 📓', color: 'bg-blue-100 text-blue-700' },
-                        { label: 'Bút iKame 🖋️', color: 'bg-amber-100 text-amber-500' },
-                        { label: 'Áo thun iKame 👕', color: 'bg-rose-100 text-rose-500' },
-                        { label: 'Bóng bay Tân thủ 🎈', color: 'bg-purple-100 text-purple-500' }
-                      ].map((gift, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 1 + i * 0.1 }}
-                          className={cn("px-4 py-2.5 rounded-2xl font-black text-[11px] flex items-center justify-center gap-2 shadow-sm border border-white", gift.color)}
-                        >
-                          {gift.label}
-                        </motion.div>
-                      ))}
+                  {/* Phase 2: Physical Gifts (Only for new employees) */}
+                  {currentUser?.role === 'new_employee' && (
+                    <div className="bg-slate-50 rounded-[2rem] p-5 border border-slate-100">
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-center">Bộ quà tặng hiện vật</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: 'Sổ iKame 📓', color: 'bg-blue-100 text-blue-700' },
+                          { label: 'Bút iKame 🖋️', color: 'bg-amber-100 text-amber-500' },
+                          { label: 'Áo thun iKame 👕', color: 'bg-rose-100 text-rose-500' },
+                          { label: 'Bóng bay Tân thủ 🎈', color: 'bg-purple-100 text-purple-500' }
+                        ].map((gift, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1 + i * 0.1 }}
+                            className={cn("px-4 py-2.5 rounded-2xl font-black text-[11px] flex items-center justify-center gap-2 shadow-sm border border-white", gift.color)}
+                          >
+                            {gift.label}
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <motion.button

@@ -345,6 +345,7 @@ export const ToastContainer = () => {
 /* ───── AI Mascot Chat ───── */
 const AI_RESPONSES: Record<string, string> = {
   'default': 'Xin chào! Tôi là iKame Assistant 🤖. Hãy hỏi về quy trình, chính sách, OKR, hoặc bất cứ điều gì liên quan đến công việc!',
+  'employee': 'Chào ngày mới iKamer! 🌞\n\nTôi là Trợ lý ảo My iKame, luôn sẵn sàng hỗ trợ bạn trên siêu ứng dụng nhà mình. Bạn có thể nhờ tôi:\n- Điểm danh iCheck cực nhanh ⏱️\n- Giải đáp phúc lợi, bảng lương 💰\n- Tra cứu chính sách từ iWiki 📚\n\nHôm nay bạn cần tôi giúp gì?',
   'new_employee': 'Chào mừng thành viên mới gia nhập đại gia đình iKame! 🎉\n\nTôi là trợ lý ảo iKame, người bạn đồng hành giúp bạn "vượt vũ môn" trong những ngày đầu tiên. Tôi có thể giúp bạn:\n- Giải đáp các nhiệm vụ Onboarding 🚀\n- Hướng dẫn chấm công, OKRs ⏰\n- Khám phá văn hóa & các bí kíp sống sót tại iKame.\n\nBạn cần tôi hỗ trợ gì cho ngày đầu tiên không?',
   'nghỉ phép': '📋 **Chính sách nghỉ phép:**\n- Phép năm: 12 ngày/năm\n- Phép ốm: có giấy BS, không giới hạn\n- Thai sản: 6 tháng (nữ), 5 ngày (nam)\n\n👉 Tạo đơn tại **iCheck > Tạo đơn nghỉ phép**.',
   'lương': '💰 Thông tin lương được mã hóa E2E. Xem phiếu lương tại **Dashboard > Widget Lương** (yêu cầu xác thực).',
@@ -361,10 +362,14 @@ const AIMascotChat = () => {
   // Set initial message based on role
   useEffect(() => {
     if (messages.length === 0) {
+      let welcomeMsg = AI_RESPONSES['default'];
+      if (currentUser?.role === 'new_employee') welcomeMsg = AI_RESPONSES['new_employee'];
+      else if (currentUser?.role === 'employee' || currentUser?.role === 'manager') welcomeMsg = AI_RESPONSES['employee'];
+
       setMessages([
         { 
           role: 'assistant', 
-          content: currentUser?.role === 'new_employee' ? AI_RESPONSES['new_employee'] : AI_RESPONSES['default'] 
+          content: welcomeMsg 
         }
       ]);
     }
@@ -375,9 +380,10 @@ const AIMascotChat = () => {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // Proactive auto-open for new employees
+  // Proactive auto-open for specific roles
   useEffect(() => {
-    if (currentUser?.role === 'new_employee' && !sessionStorage.getItem('ai_mascot_opened')) {
+    const isTargetRole = currentUser?.role === 'new_employee' || currentUser?.role === 'employee' || currentUser?.role === 'manager';
+    if (isTargetRole && !sessionStorage.getItem('ai_mascot_opened')) {
       const timer = setTimeout(() => {
         setIsOpen(true);
         sessionStorage.setItem('ai_mascot_opened', 'true');

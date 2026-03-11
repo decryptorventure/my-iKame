@@ -79,24 +79,64 @@ const ADMIN_STEPS: Step[] = [
     }
 ];
 
+// Steps for Official Employees (role: employee, manager)
+const OFFICIAL_STEPS: Step[] = [
+    {
+        target: 'body',
+        content: <p>Chào mừng bạn trải nghiệm My iKame - Super App dành riêng cho người iKame!<br />Hãy dành 1 phút để điểm qua các tính năng thú vị trên ứng dụng nhé.</p>,
+        title: 'Trải nghiệm Super App',
+        placement: 'center',
+        disableBeacon: true,
+    },
+    {
+        target: '#tour-nav',
+        content: 'Đây là trung tâm điều hướng. Bạn có thể dễ dàng truy cập iCheck chấm công, iQuest nhiệm vụ hay Đổi quà iReward từ đây.',
+        title: 'Menu Tiện Ích',
+        placement: 'right',
+        disableBeacon: true,
+    },
+    {
+        target: '#tour-search',
+        content: 'Cần tìm nhanh tài liệu chính sách, ứng dụng hay đồng nghiệp? Gõ vào thanh tìm kiếm toàn cục này.',
+        title: 'Tìm kiếm Siêu Tốc',
+        placement: 'bottom',
+        disableBeacon: true,
+    },
+    {
+        target: '#tour-feed',
+        content: 'Đây là News Feed. Góc cập nhật thông báo quan trọng từ công ty, vinh danh thành tích, và các cập nhật từ AI Assistant.',
+        title: 'Bảng Tin Nội Bộ',
+        placement: 'auto',
+        disableBeacon: true,
+    },
+    {
+        target: 'body',
+        content: <p>Để bắt đầu, hãy thử chấm công <b>iCheck</b> ngày hôm nay trên điện thoại, hoặc gửi một <b>Kudos</b> khen tặng đồng nghiệp trên bảng tin nhé!<br />Cùng tích lũy EXP và lên level nào!</p>,
+        title: 'Sẵn sàng trải nghiệm',
+        placement: 'center',
+    }
+];
+
 export const WelcomeTour = () => {
     const { currentUser, updateUser } = useAuthStore();
     const [run, setRun] = useState(false);
 
     // Determine which steps to show based on role
     const isAdmin = currentUser?.role === 'admin';
-    const steps = isAdmin ? ADMIN_STEPS : NEWBIE_STEPS;
+    const isNewbie = currentUser?.role === 'new_employee';
+    const steps = isAdmin ? ADMIN_STEPS : (isNewbie ? NEWBIE_STEPS : OFFICIAL_STEPS);
 
     useEffect(() => {
         // Automatically start tour for specific conditions
-        const isNewbie = currentUser?.role === 'new_employee' && !currentUser?.hasCompletedWelcomeTour;
+        const isNewbieTour = isNewbie && !currentUser?.hasCompletedWelcomeTour;
+        const isOfficialTour = !isNewbie && !isAdmin && !currentUser?.hasCompletedWelcomeTour;
         const isNewAdmin = isAdmin && !currentUser?.hasCompletedAdminTour;
 
-        if (isNewbie || isNewAdmin) {
+        if (isNewbieTour || isOfficialTour || isNewAdmin) {
             // slight delay to ensure UI is mounted
             setTimeout(() => setRun(true), 1000);
         }
-    }, [currentUser, isAdmin]);
+    }, [currentUser, isAdmin, isNewbie]);
 
     const handleJoyrideCallback = (data: CallBackProps) => {
         const { status } = data;

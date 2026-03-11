@@ -23,6 +23,13 @@ export const Profile = () => {
         updateUser(form);
         setIsEditing(false);
         addToast({ type: 'success', title: 'Cập nhật thành công!', message: 'Thông tin hồ sơ đã được lưu.' });
+        
+        // Track official onboarding quest (ID 28 - Hoàn thiện Profile)
+        const quests = useAppStore.getState().quests;
+        const quest28 = quests.find(q => q.id === 28);
+        if (quest28 && quest28.status === 'pending') {
+            useAppStore.getState().approveQuest(28, true);
+        }
     };
 
     const handleEquipBadge = (badgeId: string) => {

@@ -199,7 +199,7 @@ export const MOCK_USERS: Record<string, { user: User; password: string }> = {
       department: 'Engineering', title: 'Senior Developer',
       phone: '0908765432', address: '456 Cách Mạng Tháng 8, Q3, TP.HCM',
       dob: '1992-10-10', startDate: '2022-01-01', online: true,
-      hasCompletedWelcomeTour: true,
+      hasCompletedWelcomeTour: false,
       unlockedBadges: ['b1', 'b2', 'b5'],
       equippedBadge: 'b5',
     },
@@ -265,7 +265,7 @@ const buildInitialAttendance = (): AttendanceRecord[] => {
       const isLate = Math.random() < 0.1;
       records.push({
         date: dateStr,
-        checkIn: isLate ? '09:' + String(Math.floor(Math.random() * 30) + 10).padStart(2, '0') : '08:' + String(Math.floor(Math.random() * 29) + 1).padStart(2, '0'),
+        checkIn: '08:' + String(Math.floor(Math.random() * 29) + 1).padStart(2, '0'),
         checkOut: '17:' + String(Math.floor(Math.random() * 30) + 30).padStart(2, '0'),
         status: isLate ? 'late' : 'on_time',
         expEarned: isLate ? 5 : 10,
@@ -299,24 +299,51 @@ export const useAuthStore = create<AuthState>()(
         if (entry.password !== password) return { success: false, error: 'Mật khẩu không đúng.' };
 
         set({ currentUser: entry.user, isAuthenticated: true });
+        
+        // Reset states for testing/onboarding
+        sessionStorage.removeItem('ai_mascot_opened');
 
         setTimeout(() => {
           const appStore = useAppStore.getState();
+          const INITIAL_SYSTEM_QUESTS = [
+            { id: 24, title: 'iCheck đầu tiên', desc: 'Thực hiện chấm công lần đầu trên hệ thống My iKame.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hệ thống', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Sử dụng tính năng iCheck trên Dashboard hoặc App mobile để ghi nhận ngày công.' },
+            { id: 25, title: 'Đạt mốc Level 2', desc: 'Tích lũy EXP từ các hoạt động để thăng cấp lên Level 2.', exp: 100, credits: 20, progress: 0, target: 2, status: 'pending', subCategory: 'Cá nhân', rarity: 'rare', tabId: 'onboarding_official', howToComplete: 'Tham gia các hoạt động như iCheck, tương tác bải viết để nhận EXP và thăng cấp.' },
+            { id: 26, title: 'Gửi lời chúc mừng', desc: 'Gửi lời chúc Sinh nhật hoặc Thâm niên đến đồng nghiệp.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Tìm các mục Sinh nhật/Thâm niên trên Dashboard và nhấn gửi lời chúc.' },
+            { id: 27, title: 'Tương tác Newsfeed', desc: 'Like hoặc bình luận vào bài viết của đồng nghiệp.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Dạo một vòng quanh Newsfeed và để lại tim hoặc bình luận cho một bài viết bất kỳ.' },
+            { id: 28, title: 'Hoàn thiện Profile', desc: 'Cập nhật đầy đủ thông tin cá nhân và ảnh đại diện.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Cá nhân', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Truy cập trang Cá nhân và cập nhật các thông tin còn thiếu.' },
+          ];
+
+          // Ensure all system quests exist in the current store
+          let currentQuests = [...appStore.quests];
+          INITIAL_SYSTEM_QUESTS.forEach(sysQ => {
+            if (!currentQuests.find(q => q.id === sysQ.id)) {
+              currentQuests.push(sysQ as any);
+            }
+          });
+
           if (entry.user.role === 'new_employee') {
             useAppStore.setState({
-              quests: appStore.quests.map(q => ({ ...q, status: 'pending', progress: 0 })),
+              quests: currentQuests.map(q => ({ ...q, status: 'pending', progress: 0 })),
               attendanceRecords: [],
               todayCheckedIn: false,
               todayCheckInTime: null
             });
           } else {
             useAppStore.setState({
-              quests: appStore.quests.map(q =>
-                q.tabId === 'onboarding' ? { ...q, status: 'completed', progress: q.target } : q
-              ),
+              quests: currentQuests.map(q => {
+                if (q.tabId === 'onboarding') return { ...q, status: 'completed' as const, progress: q.target };
+                // Reset onboarding_official for nva@ikame.vn or anyone meeting criteria
+                if (q.tabId === 'onboarding_official' && (email.toLowerCase() === 'nva@ikame.vn' || !entry.user.hasReceivedOnboardingReward)) {
+                   return { ...q, status: 'pending' as const, progress: 0 };
+                }
+                return q;
+              }),
               attendanceRecords: appStore.attendanceRecords.length === 0 ? buildInitialAttendance() : appStore.attendanceRecords
             });
           }
+          
+          // Re-trigger check
+          setTimeout(() => useAppStore.getState().checkOnboardingCompletion(), 100);
         }, 0);
 
         return { success: true };
@@ -326,7 +353,14 @@ export const useAuthStore = create<AuthState>()(
 
       updateUser: (updates) => {
         const u = get().currentUser;
-        if (u) set({ currentUser: { ...u, ...updates } });
+        if (u) {
+          set({ currentUser: { ...u, ...updates } });
+          // Track official onboarding quest (ID 28 - Hoàn thiện Profile)
+          const quest28 = useAppStore.getState().quests.find(q => q.id === 28);
+          if (quest28 && quest28.status === 'pending') {
+            useAppStore.getState().approveQuest(28, true);
+          }
+        }
       },
     }),
     { name: 'ikame-auth', storage: createJSONStorage(() => localStorage) }
@@ -538,6 +572,12 @@ export const useAppStore = create<AppState>()(
           attendanceRecords: [record, ...s.attendanceRecords.filter(r => r.date !== today)],
         }));
         get().addExp(isLate ? 5 : 10, isLate ? 'iCheck (Đi muộn)' : 'iCheck đúng giờ');
+        
+        // Track official onboarding quest (ID 24)
+        const quest24 = get().quests.find(q => q.id === 24);
+        if (quest24 && quest24.status === 'pending') {
+          get().approveQuest(24, true);
+        }
       },
 
       checkOut: () => {
@@ -633,10 +673,16 @@ export const useAppStore = create<AppState>()(
         { id: 21, title: 'Sử dụng iPerform', desc: 'Sign-in và tìm hiểu chức năng của hệ thống iPerform.', exp: 40, credits: 8, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-01', howToComplete: 'Đăng nhập iPerform và làm quen với giao diện theo dõi KPI cá nhân.' },
         { id: 22, title: 'Tìm hiểu iCloud', desc: 'Tìm hiểu về cách thức lưu trữ và chia sẻ file trên iCloud (Optional).', exp: 20, credits: 4, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-05', howToComplete: 'Tìm hiểu cấu trúc lưu trữ dữ liệu chung của công ty trên nền tảng Google Drive (iCloud iKame).' },
         { id: 23, title: 'Tạo IT Support request', desc: 'Tìm hiểu cách tạo request hỗ trợ IT bằng Asana Form (Optional).', exp: 20, credits: 4, progress: 0, target: 1, status: 'pending', subCategory: 'IT & Tools', rarity: 'common', tabId: 'onboarding', deadline: '2026-03-05', howToComplete: 'Biết cách sử dụng Form Asana để tạo yêu cầu hỗ trợ từ BP IT khi gặp sự cố máy móc/phần mềm.' },
+        // Official Employee System Onboarding (for existing employees new to the app)
+        { id: 24, title: 'iCheck đầu tiên', desc: 'Thực hiện chấm công lần đầu trên hệ thống My iKame.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hệ thống', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Sử dụng tính năng iCheck trên Dashboard hoặc App mobile để ghi nhận ngày công.' },
+        { id: 25, title: 'Đạt mốc Level 2', desc: 'Tích lũy EXP từ các hoạt động để thăng cấp lên Level 2.', exp: 100, credits: 20, progress: 0, target: 2, status: 'pending', subCategory: 'Cá nhân', rarity: 'rare', tabId: 'onboarding_official', howToComplete: 'Tham gia các hoạt động như iCheck, tương tác bải viết để nhận EXP và thăng cấp.' },
+        { id: 26, title: 'Gửi lời chúc mừng', desc: 'Gửi lời chúc Sinh nhật hoặc Thâm niên đến đồng nghiệp.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Tìm các mục Sinh nhật/Thâm niên trên Dashboard và nhấn gửi lời chúc.' },
+        { id: 27, title: 'Tương tác Newsfeed', desc: 'Like hoặc bình luận vào bài viết của đồng nghiệp.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Dạo một vòng quanh Newsfeed và để lại tim hoặc bình luận cho một bài viết bất kỳ.' },
+        { id: 28, title: 'Hoàn thiện Profile', desc: 'Cập nhật đầy đủ thông tin cá nhân và ảnh đại diện.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Cá nhân', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Truy cập trang Cá nhân và cập nhật các thông tin còn thiếu.' },
       ],
       submitQuestReport: (questId, title, desc) => {
         const quest = get().quests.find(q => q.id === questId);
-        if (quest?.tabId === 'onboarding') {
+        if (quest?.tabId === 'onboarding' || quest?.tabId === 'onboarding_official') {
           // Instant completion for onboarding
           get().approveQuest(questId, true);
           return;
@@ -669,7 +715,7 @@ export const useAppStore = create<AppState>()(
             get().addToast({ type: 'success', title: `Quest hoàn thành: ${quest.title}`, message: `+${quest.exp} EXP · +${quest.credits} Credits` });
 
             // Trigger check for onboarding completion
-            if (quest.tabId === 'onboarding') {
+            if (quest.tabId === 'onboarding' || quest.tabId === 'onboarding_official') {
               get().checkOnboardingCompletion();
             }
 
@@ -709,6 +755,12 @@ export const useAppStore = create<AppState>()(
         if (celebration) {
           get().addExp(10, `Gửi lời chúc ${celebration.type === 'birthday' ? 'sinh nhật' : 'thâm niên'}`);
           get().addToast({ type: 'success', title: '🎉 Đã gửi lời chúc!', message: `Gửi lời chúc cho ${celebration.user.name}` });
+
+          // Track official onboarding quest (ID 26 - Gửi lời chúc mừng)
+          const quest26 = get().quests.find(q => q.id === 26);
+          if (quest26 && quest26.status === 'pending') {
+            get().approveQuest(26, true);
+          }
         }
       },
 
@@ -743,18 +795,21 @@ export const useAppStore = create<AppState>()(
       setLanguage: (lang) => set({ language: lang }),
 
       checkOnboardingCompletion: () => {
+        const auth = useAuthStore.getState();
         const { quests } = get();
-        const onboardingQuests = quests.filter(q => q.tabId === 'onboarding');
+        const isNewEmployee = auth.currentUser?.role === 'new_employee';
+        const tabId = isNewEmployee ? 'onboarding' : 'onboarding_official';
+        
+        const onboardingQuests = quests.filter(q => q.tabId === tabId);
         const completed = onboardingQuests.filter(q => q.status === 'completed').length;
         const total = onboardingQuests.length;
-        const auth = useAuthStore.getState();
 
         // Use a small delay to ensure cumulative state is settled
         if (total > 0 && completed === total && !auth.currentUser?.hasReceivedOnboardingReward) {
           console.log('Onboarding COMPLETE triggered!');
           // All done!
           auth.updateUser({
-            level: Math.round(Math.max(auth.currentUser?.level || 1, 2)), // Ensure at least Level 2
+            level: Math.round(Math.max(auth.currentUser?.level || 1, isNewEmployee ? 2 : auth.currentUser?.level + 1)), 
             credits: (auth.currentUser?.credits || 0) + 200,
             hasReceivedOnboardingReward: true,
             unlockedBadges: Array.from(new Set([...(auth.currentUser?.unlockedBadges || []), 'b1'])),
@@ -765,20 +820,22 @@ export const useAppStore = create<AppState>()(
 
           get().addToast({
             type: 'levelup',
-            title: '🎉 Hoàn thành Onboarding!',
-            message: 'Chúc mừng iKamer mới! Nhận ngay 200 Credits thưởng.'
+            title: isNewEmployee ? '🎉 Hoàn thành Onboarding!' : '🎉 Tuyệt vời iKamer!',
+            message: isNewEmployee ? 'Chúc mừng iKamer mới! Nhận ngay 200 Credits thưởng.' : 'Bạn đã làm quen thành thạo hệ thống. Nhận 200 Credits thưởng!'
           });
 
           // Also add a post to the feed
           get().addPost({
             author: { name: 'Em Sen iKame', avatar: '/logo.png', title: 'Hệ thống tự động' },
-            content: `🎊 Chúc mừng **${auth.currentUser.name}** đã chính thức hoàn thành chuỗi thử thách Onboarding! \n\nHãy cùng gửi lời chào nồng nhiệt nhất tới thành viên mới của gia đình iKame nhé! 🚀`,
+            content: isNewEmployee 
+              ? `🎊 Chúc mừng **${auth.currentUser.name}** đã chính thức hoàn thành chuỗi thử thách Onboarding! \n\nHãy cùng gửi lời chào nồng nhiệt nhất tới thành viên mới của gia đình iKame nhé! 🚀`
+              : `👏 Chúc mừng **${auth.currentUser.name}** đã hoàn thành "Khám phá Hệ thống My iKame"! \n\nTinh thần cầu thị và sẵn sàng thích nghi với công cụ mới của bạn thật đáng khen ngợi. Cùng tiếp tục bùng nổ nhé! 🔥`,
             type: 'ai_update',
-            badge: 'New Member',
+            badge: isNewEmployee ? 'New Member' : 'System Mastery',
             featuredUser: {
-              name: auth.currentUser.name,
-              title: auth.currentUser.title,
-              avatar: auth.currentUser.avatar
+              name: auth.currentUser?.name || '',
+              title: auth.currentUser?.title || '',
+              avatar: auth.currentUser?.avatar || ''
             }
           });
         }
