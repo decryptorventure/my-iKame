@@ -84,10 +84,25 @@ export const Dashboard = () => {
 
   const handleLike = (id: number) => {
     toggleLikePost(id);
-    // Track official onboarding quest (ID 27 - Tương tác Newsfeed)
-    const quest27 = quests.find(q => q.id === 27);
-    if (quest27 && quest27.status === 'pending') {
-      useAppStore.getState().approveQuest(27, true);
+    
+    // Get fresh state after toggle
+    const updatedPost = useAppStore.getState().posts.find(p => p.id === id);
+    if (updatedPost?.isLiked) {
+      // Track official onboarding quest (ID 27 - Tương tác Newsfeed)
+      const quest27 = quests.find(q => q.id === 27);
+      if (quest27 && quest27.status === 'pending') {
+        useAppStore.getState().approveQuest(27, true);
+      }
+
+      // Track Daily Task (ID 3 - Tương tác mạng nội bộ)
+      const quest3 = quests.find(q => q.id === 3);
+      if (quest3 && quest3.status === 'pending') {
+        const newProgress = Math.min((quest3.progress || 0) + 1, quest3.target);
+        useAppStore.getState().updateQuest(3, { progress: newProgress });
+        if (newProgress >= quest3.target) {
+          useAppStore.getState().approveQuest(3, true);
+        }
+      }
     }
   };
   const handlePost = () => {
@@ -149,7 +164,7 @@ export const Dashboard = () => {
         { id: 24, title: 'iCheck đầu tiên', desc: 'Thực hiện chấm công lần đầu trên hệ thống My iKame.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Hệ thống', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Sử dụng tính năng iCheck trên Dashboard hoặc App mobile để ghi nhận ngày công.' },
         { id: 25, title: 'Đạt mốc Level 2', desc: 'Tích lũy EXP từ các hoạt động để thăng cấp lên Level 2.', exp: 100, credits: 20, progress: 0, target: 2, status: 'pending', subCategory: 'Cá nhân', rarity: 'rare', tabId: 'onboarding_official', howToComplete: 'Tham gia các hoạt động như iCheck, tương tác bải viết để nhận EXP và thăng cấp.' },
         { id: 26, title: 'Gửi lời chúc mừng', desc: 'Gửi lời chúc Sinh nhật hoặc Thâm niên đến đồng nghiệp.', exp: 30, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Tìm các mục Sinh nhật/Thâm niên trên Dashboard và nhấn gửi lời chúc.' },
-        { id: 27, title: 'Tương tác Newsfeed', desc: 'Like hoặc bình luận vào bài viết của đồng nghiệp.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Dạo một vòng quanh Newsfeed và để lại tim hoặc bình luận cho một bài viết bất kỳ.' },
+        { id: 27, title: 'Tương tác Newsfeed', desc: 'Thắp lửa hoặc bình luận vào bài viết của đồng nghiệp.', exp: 20, credits: 5, progress: 0, target: 1, status: 'pending', subCategory: 'Tương tác', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Dạo một vòng quanh Newsfeed và thắp lửa hoặc bình luận cho một bài viết bất kỳ.' },
         { id: 28, title: 'Hoàn thiện Profile', desc: 'Cập nhật đầy đủ thông tin cá nhân và ảnh đại diện.', exp: 50, credits: 10, progress: 0, target: 1, status: 'pending', subCategory: 'Cá nhân', rarity: 'common', tabId: 'onboarding_official', howToComplete: 'Truy cập trang Cá nhân và cập nhật các thông tin còn thiếu.' },
       ];
 
@@ -397,12 +412,12 @@ export const Dashboard = () => {
                   </div>
                 )}
                 <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 mb-2 mt-4">
-                  <span className="font-medium">{post.likes} lượt thích</span>
+                  <span className="font-medium">{post.likes} lượt thắp lửa</span>
                   <span>{post.comments} bình luận</span>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => handleLike(post.id)} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 ${post.isLiked ? 'text-rose-600 bg-rose-50' : 'text-slate-600 hover:bg-slate-50'}`}>
-                    <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-rose-500' : ''}`} /> {post.isLiked ? 'Đã thích' : 'Thích'}
+                  <button onClick={() => handleLike(post.id)} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 ${post.isLiked ? 'text-orange-600 bg-orange-50' : 'text-slate-600 hover:bg-slate-50'}`}>
+                    <Flame className={`w-4 h-4 ${post.isLiked ? 'fill-orange-500 text-orange-500' : ''}`} /> {post.isLiked ? 'Đã thắp lửa' : 'Thắp lửa'}
                   </button>
                   <button className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"><MessageCircle className="w-4 h-4" /> Bình luận</button>
                   <button className="flex-1 flex items-center justify-center gap-2 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"><Share2 className="w-4 h-4" /> Chia sẻ</button>
