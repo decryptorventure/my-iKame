@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useAppStore } from '../store';
-import { Trophy, Star, TrendingUp, Clock, Heart, MessageCircle, Share2, Image as ImageIcon, Smile, Send, Calendar, Award, MoreHorizontal, Zap, ArrowUpRight, Coins, Flame, Sparkles, ChevronRight, CheckCircle2, Users, Cake, Medal, PartyPopper, Rocket } from 'lucide-react';
+import { Trophy, Star, TrendingUp, Clock, Heart, MessageCircle, Share2, Image as ImageIcon, Smile, Send, Calendar, Award, MoreHorizontal, Zap, ArrowUpRight, Coins, Flame, Sparkles, ChevronRight, CheckCircle2, Users, Cake, Medal, PartyPopper, Rocket, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils';
@@ -160,305 +160,122 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-brand-gradient rounded-2xl p-6 md:p-8 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 pointer-events-none" />
-        <div className="relative z-10">
-          <p className="text-orange-100 text-sm font-medium mb-1">{format(new Date(), 'EEEE, dd/MM/yyyy')}</p>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">{greeting}, {currentUser?.name?.split(' ').pop() || 'bạn'} 👋</h1>
-          <p className="text-orange-100 text-sm max-w-lg">Hãy bắt đầu một ngày làm việc hiệu quả và kiếm thêm EXP!</p>
-        </div>
-      </motion.div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card, i) => {
-          const Icon = card.icon;
-          return (
-            <motion.div key={card.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              className="bg-white rounded-2xl p-5 border border-slate-200/60 card-hover group cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm`}>
-                  <Icon className="w-5 h-5 text-white" />
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-brand-500 transition-colors" />
-              </div>
-              <p className="text-2xl font-extrabold text-slate-900">{card.value}</p>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">{card.label} · <span className="text-slate-400">{card.sub}</span></p>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Main 3-col grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left */}
-        <div id="tour-quests" className="lg:col-span-3 space-y-5 hidden lg:block scroll-mt-28">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
-            <div className="text-center">
-              <div className="relative inline-block mb-3">
-                <img src={currentUser?.avatar} alt="" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" referrerPolicy="no-referrer" />
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-brand-gradient text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border-2 border-white whitespace-nowrap flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-white" /> Lv.{currentUser?.level}
-                </div>
-              </div>
-              <h3 className="font-bold text-slate-900">{currentUser?.name}</h3>
-              <p className="text-xs text-slate-500 mt-0.5">{currentUser?.title}</p>
-              {isNewEmployee && (
-                <span className="inline-block mt-1.5 px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold">🌱 Nhân viên mới</span>
-              )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 max-w-[1400px] mx-auto">
+        {/* ---------------- LEFT COLUMN: MAIN FEED (65%) ---------------- */}
+        <div id="tour-feed" className="lg:col-span-8 space-y-6 scroll-mt-28">
+          {/* Compact Lời Chào (Mini Hero) */}
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm relative overflow-hidden">
+            <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-brand-50 rounded-full blur-2xl pointer-events-none" />
+            <div className="relative z-10">
+              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">{greeting}, {currentUser?.name?.split(' ').pop() || 'bạn'} 👋</h1>
+              <p className="text-slate-500 text-sm mt-1">{format(new Date(), 'EEEE, dd/MM/yyyy')} · Chia sẻ cập nhật mới nhất của bạn!</p>
             </div>
-            <div className="mt-5 space-y-2">
-              <div className="flex justify-between text-xs mb-1"><span className="text-slate-500">Kinh nghiệm</span><span className="text-brand-600 font-bold">{currentUser?.exp} / {currentUser?.maxExp}</span></div>
-              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${((currentUser?.exp || 0) / (currentUser?.maxExp || 1)) * 100}%` }} transition={{ duration: 1.5, ease: 'easeOut' }} className="bg-brand-gradient h-full rounded-full" />
+            <div className="hidden sm:flex items-center gap-3 relative z-10">
+              <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
+                <Coins className="w-4 h-4 text-amber-500" />
+                <span className="font-bold text-amber-700 text-sm">{currentUser?.credits} xu</span>
               </div>
-              <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                <span className="text-slate-500 text-xs">Credits</span>
-                <span className="font-bold text-amber-600 flex items-center gap-1 text-sm"><Star className="w-4 h-4 fill-amber-500" /> {currentUser?.credits}</span>
+              <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
+                <Flame className="w-4 h-4 text-emerald-500" />
+                <span className="font-bold text-emerald-700 text-sm">{computeStreak()} ngày</span>
               </div>
             </div>
-            <button onClick={handleCheckIn} className={`w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 ${todayCheckedIn ? 'bg-emerald-500' : 'bg-brand-gradient shadow-brand animate-pulse-glow'}`}>
-              <Clock className="w-4 h-4" /> {todayCheckedIn ? '✅ Đã iCheck hôm nay' : 'iCheck ngay'}
-            </button>
           </motion.div>
 
-          {/* Leaderboard */}
-          <motion.div id="tour-leaderboard" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" /> Bảng xếp hạng</h3>
-            </div>
-
-            {/* Type Toggle */}
-            <div className="flex gap-1 mb-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-              <button
-                onClick={() => setLeaderboardType('personal')}
-                className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", leaderboardType === 'personal' ? 'bg-white text-brand-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700')}
-              >
-                Cá nhân
-              </button>
-              <button
-                onClick={() => setLeaderboardType('team')}
-                className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", leaderboardType === 'team' ? 'bg-white text-brand-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700')}
-              >
-                Phòng ban
-              </button>
-            </div>
-
-            {/* Time Toggle */}
-            <div className="flex gap-1 mb-3">
-              {(['weekly', 'monthly'] as const).map(tab => (
-                <button key={tab} onClick={() => setLeaderboardTab(tab)}
-                  className={cn("flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all",
-                    leaderboardTab === tab ? "bg-brand-gradient text-white shadow-sm" : "text-slate-500 hover:bg-slate-50")}>
-                  {tab === 'weekly' ? 'Tuần' : 'Tháng'}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-1.5">
-              {currentLeaderboard.map((u: any, i) => (
-                <div key={i} onClick={() => leaderboardType === 'personal' && setSelectedUserId(u.name)} className={cn("flex items-center gap-3 p-2 rounded-xl transition-colors -mx-2", leaderboardType === 'personal' ? "hover:bg-slate-50 cursor-pointer group" : "")}>
-                  <span className={cn("text-center w-6 font-bold", i < 3 ? "text-lg" : "text-xs text-slate-400")}>{i < 3 ? medals[i] : `#${i + 1}`}</span>
-                  <img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm" referrerPolicy="no-referrer" />
-                  <div className="flex-1 min-w-0">
-                    <p className={cn("font-bold text-[12px] text-slate-900 truncate transition-colors", leaderboardType === 'personal' && "group-hover:text-brand-600")}>{u.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {leaderboardType === 'personal' ? (
-                        <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-1.5 py-0.5 rounded">Lv.{u.level}</span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">{u.memberCount} thành viên</span>
-                      )}
-                      <span className="text-[10px] text-slate-400">{u.exp} XP</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Feed */}
-        <div id="tour-feed" className="lg:col-span-6 space-y-5 scroll-mt-28">
-          {/* New Employee Onboarding Guide in Feed */}
-          {isNewEmployee && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-brand-50 border border-brand-200 rounded-2xl overflow-hidden shadow-sm">
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center shadow-sm">
-                    <Rocket className="w-5 h-5" />
+        {/* Onboarding Guide in Feed - Compacted version */}
+        {isNewEmployee && onboardingPercent < 100 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-brand-50 border border-brand-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 bg-white text-brand-600 rounded-xl flex items-center justify-center shadow-sm border border-brand-100">
+                    <Rocket className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-slate-900">Bắt đầu hành trình My iKame! 🚀</h3>
-                    <p className="text-xs text-brand-600 font-medium mt-0.5">Nhiệm vụ Onboarding dành riêng cho bạn</p>
+                    <h3 className="font-semibold text-slate-900 text-[15px] leading-tight uppercase tracking-tight">Hành trình Tân thủ 🚀</h3>
+                    <p className="text-[10px] text-brand-600 font-medium uppercase tracking-wider">Nhiệm vụ Onboarding của bạn</p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-700 leading-relaxed mb-4">
-                  Chào mừng bạn gia nhập! Dưới đây là các bước tiếp theo để bạn làm quen với đồng nghiệp và hệ thống. Thực hiện ngay để tích lũy EXP nhé.
-                </p>
-                <div className="space-y-2 mb-4">
-                  {onboardingQuests.slice(0, 3).map(q => (
-                    <div key={q.id} className="bg-white p-3 rounded-xl border border-brand-100 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className={cn("w-5 h-5 flex-shrink-0", q.status === 'completed' ? 'text-emerald-500' : 'text-slate-300')} />
-                        <div>
-                          <p className={cn("text-sm font-bold", q.status === 'completed' ? 'text-slate-500 line-through' : 'text-slate-900')}>{q.title}</p>
-                          <p className="text-xs text-slate-500">{q.desc}</p>
-                        </div>
-                      </div>
-                      <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 whitespace-nowrap">+{q.exp} EXP</span>
-                    </div>
-                  ))}
+                <div className="flex items-baseline gap-1.5 bg-white/60 px-2 py-0.5 rounded-lg border border-brand-100">
+                   <span className="text-xs font-semibold text-brand-700">{onboardingPercent}%</span>
+                   <span className="text-[9px] font-medium text-slate-500 uppercase">Hoàn thành</span>
                 </div>
-                <button onClick={() => navigate('/iquest')} className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-brand-600 text-white font-bold text-sm rounded-xl hover:bg-brand-700 transition active:scale-95">
-                  <Award className="w-4 h-4" /> Tham gia iQuest để xem chi tiết
-                </button>
               </div>
-            </motion.div>
-          )}
 
-          {/* Birthday Section */}
-          {!isNewEmployee && birthdayCelebrations.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
-                <Cake className="w-4 h-4 text-rose-500" />
-                <h3 className="font-bold text-sm text-slate-900">🎂 Chúc mừng sinh nhật</h3>
+              {/* Progress Bar - Thinner */}
+              <div className="w-full bg-white/60 rounded-full h-2 mb-4 overflow-hidden border border-brand-100 p-0.5">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${onboardingPercent}%` }} transition={{ duration: 1, delay: 0.5 }} className="bg-brand-gradient h-full rounded-full shadow-sm shadow-brand/40" />
               </div>
-              <div className="divide-y divide-slate-50">
-                {birthdayCelebrations.map(c => (
-                  <div key={c.id} className="px-5 py-4">
-                    <div className="flex items-center gap-4 mb-3">
-                      <div className="relative flex-shrink-0">
-                        <img src={c.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" referrerPolicy="no-referrer" />
-                        <div className="absolute -bottom-1 -right-1 text-base">🎂</div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-sm text-slate-900">{c.user.name}</h4>
-                        <p className="text-[10px] text-slate-500 truncate">{c.user.title} · {c.user.department}</p>
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-medium">Hôm nay</div>
-                    </div>
-                    {!c.hasWished ? (
-                      <div className="flex gap-2">
-                        <input
-                          value={wishInputs[c.id] || ''}
-                          onChange={e => setWishInputs(prev => ({ ...prev, [c.id]: e.target.value }))}
-                          placeholder="Nhập lời chúc..."
-                          className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] focus:outline-none focus:border-brand-400"
-                        />
-                        <button onClick={() => handleSendCustomWish(c.id)}
-                          className="px-3 py-1.5 bg-brand-600 text-white rounded-lg text-[11px] font-bold hover:bg-brand-700 transition-colors shadow-sm">
-                          Gửi
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-bold bg-emerald-50 py-1.5 justify-center rounded-lg">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Bạn đã gửi lời chúc
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
 
-          {/* Anniversary Section */}
-          {!isNewEmployee && anniversaryCelebrations.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-              className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
-                <Medal className="w-4 h-4 text-amber-500" />
-                <h3 className="font-bold text-sm text-slate-900">🏅 Chúc mừng thâm niên</h3>
-              </div>
-              <div className="divide-y divide-slate-50">
-                {anniversaryCelebrations.map(c => (
-                  <div key={c.id} className="px-5 py-4">
-                    <div className="flex items-center gap-4 mb-3">
-                      <div className="relative flex-shrink-0">
-                        <img src={c.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" referrerPolicy="no-referrer" />
-                        <div className="absolute -bottom-1 -right-1 text-base">🏅</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                {onboardingQuests.slice(0, 4).map(q => (
+                  <button key={q.id} onClick={() => navigate(`/iquest?questId=${q.id}`)}
+                    className="flex bg-white/80 hover:bg-white p-2.5 rounded-xl border border-brand-100 items-center justify-between transition-all hover:shadow-sm active:scale-[0.98] group">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={cn("w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors", q.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400 group-hover:bg-brand-100 group-hover:text-brand-600')}>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-sm text-slate-900">{c.user.name}</h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1 py-0.5 rounded border border-amber-200">{c.years} năm</span>
-                          <p className="text-[10px] text-slate-500 truncate">{c.user.title}</p>
-                        </div>
+                      <div className="text-left min-w-0">
+                        <p className={cn("text-xs font-medium truncate", q.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-900 group-hover:text-brand-700')}>{q.title}</p>
                       </div>
                     </div>
-                    {!c.hasWished ? (
-                      <div className="flex gap-2">
-                        <input
-                          value={wishInputs[c.id] || ''}
-                          onChange={e => setWishInputs(prev => ({ ...prev, [c.id]: e.target.value }))}
-                          placeholder="Chia sẻ niềm vui..."
-                          className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] focus:outline-none focus:border-brand-400"
-                        />
-                        <button onClick={() => handleSendCustomWish(c.id)}
-                          className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-[11px] font-bold hover:bg-amber-700 transition-colors shadow-sm">
-                          Gửi
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-bold bg-emerald-50 py-1.5 justify-center rounded-lg">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Đã gửi lời chúc
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Post Creator */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
-            <div className="flex gap-3">
-              <img src={currentUser?.avatar} alt="" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
-              <div className="flex-1">
-                <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Chia sẻ cập nhật, thành tích..."
-                  className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 rounded-xl p-3 resize-none transition-all text-sm font-medium" rows={2} />
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex gap-1">
-                    <button className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"><ImageIcon className="w-4 h-4" /></button>
-                    <button className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"><Smile className="w-4 h-4" /></button>
-                    <button onClick={() => setShowKudosModal(true)} className="flex items-center gap-1 p-2 text-amber-500 hover:bg-amber-50 rounded-lg text-xs font-bold transition-colors ml-2">
-                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Gửi Kudos
-                    </button>
-                  </div>
-                  <button onClick={handlePost} disabled={!newPostContent.trim()} className="flex items-center gap-2 px-5 py-2 bg-brand-600 text-white rounded-xl font-bold text-sm hover:bg-brand-700 transition-colors disabled:opacity-40 active:scale-95">
-                    <Send className="w-4 h-4" /> Đăng
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </button>
-                </div>
+                ))}
               </div>
+              <button onClick={() => navigate('/iquest')} className="w-full inline-flex justify-center items-center gap-2 px-4 py-2 bg-brand-600 text-white font-semibold text-[12px] rounded-xl hover:bg-brand-700 transition active:scale-95 shadow-md shadow-brand/20">
+                <Award className="w-4 h-4" /> Khám phá tất cả nhiệm vụ iQuest
+              </button>
             </div>
           </motion.div>
+        )}
 
-          {/* Feed Filters */}
-          <div className="flex gap-2 p-1.5 bg-slate-50 border border-slate-200/60 rounded-xl overflow-x-auto no-scrollbar">
-            {[
-              { id: 'all', label: 'Tất cả' },
-              { id: 'pnod', label: 'Thông báo PnOD' },
-              { id: 'kudos', label: 'Vinh danh' },
-              { id: 'ai', label: 'Em Sen iKame' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setFeedFilter(tab.id as any)}
-                className={cn(
-                  "px-4 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all",
-                  feedFilter === tab.id
-                    ? "bg-white text-brand-600 shadow-sm border border-slate-200"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+        {/* Post Creator */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm relative z-20">
+          <div className="flex gap-3">
+            <img src={currentUser?.avatar} alt="" className="w-10 h-10 rounded-full object-cover shadow-sm bg-slate-50" referrerPolicy="no-referrer" />
+            <div className="flex-1">
+              <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} placeholder="Chia sẻ cập nhật, thành tích..."
+                className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 rounded-xl p-3 resize-none transition-all text-sm font-medium" rows={2} />
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex gap-1">
+                  <button className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"><ImageIcon className="w-4 h-4" /></button>
+                  <button className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"><Smile className="w-4 h-4" /></button>
+                  <button onClick={() => setShowKudosModal(true)} className="flex items-center gap-1 p-2 text-amber-500 hover:bg-amber-50 rounded-lg text-xs font-bold transition-colors ml-2">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Gửi Kudos
+                  </button>
+                </div>
+                <button onClick={handlePost} disabled={!newPostContent.trim()} className="flex items-center gap-2 px-5 py-2 bg-brand-600 text-white rounded-xl font-bold text-sm hover:bg-brand-700 transition-colors disabled:opacity-40 active:scale-95 shadow-sm">
+                  <Send className="w-4 h-4" /> Đăng
+                </button>
+              </div>
+            </div>
           </div>
+        </motion.div>
+
+        {/* Feed Filters */}
+        <div className="flex gap-2 p-1.5 bg-slate-50 border border-slate-200/60 rounded-xl overflow-x-auto no-scrollbar bg-white/80">
+          {[
+            { id: 'all', label: 'Tất cả' },
+            { id: 'pnod', label: 'Thông báo PnOD' },
+            { id: 'kudos', label: 'Vinh danh' },
+            { id: 'ai', label: 'Em Sen iKame' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setFeedFilter(tab.id as any)}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all",
+                feedFilter === tab.id
+                  ? "bg-white text-brand-600 shadow-sm border border-slate-200"
+                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/80"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
           {filteredPosts.map((post, idx) => {
             const postUser = users.find(u => u.name === post.author.name);
@@ -556,30 +373,198 @@ export const Dashboard = () => {
           })}
         </div>
 
-        {/* Right */}
-        <div className="lg:col-span-3 space-y-5">
+        {/* ---------------- RIGHT COLUMN: SIDEBAR WIDGETS (35%) ---------------- */}
+        <div className="lg:col-span-4 space-y-5">
+          {/* Compact Profile Card */}
+          <motion.div id="tour-profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-bl-full pointer-events-none -mr-10 -mt-10" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="relative">
+                  <img src={currentUser?.avatar} alt="" className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md bg-slate-50" referrerPolicy="no-referrer" />
+                  <div className="absolute -bottom-1 -right-1 bg-brand-gradient text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg border-2 border-white flex items-center shadow-sm">
+                    Lv.{currentUser?.level}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-lg leading-tight">{currentUser?.name}</h3>
+                  <p className="text-sm text-slate-500 font-medium">{currentUser?.title}</p>
+                  {isNewEmployee && (
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-[10px] font-bold shadow-sm">🌱 Nhân viên mới</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-100/60">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5"><Star className="w-4 h-4 text-emerald-500" /> Kinh nghiệm</span>
+                  <span className="font-bold text-emerald-700">{currentUser?.exp} / {currentUser?.maxExp}</span>
+                </div>
+                <div className="w-full bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${((currentUser?.exp || 0) / (currentUser?.maxExp || 1)) * 100}%` }} transition={{ duration: 1.5, ease: 'easeOut' }} className="bg-gradient-to-r from-emerald-400 to-teal-500 h-full rounded-full" />
+                </div>
+                
+                <div className="pt-2 border-t border-slate-200/60 flex justify-between items-center text-sm">
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5"><Coins className="w-4 h-4 text-amber-500" /> iKame Coin</span>
+                  <span className="font-bold text-amber-600">{currentUser?.credits}</span>
+                </div>
+              </div>
+
+              <button onClick={handleCheckIn} className={`w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-extrabold text-[15px] text-white transition-all shadow-md active:scale-95 ${todayCheckedIn ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-brand-gradient hover:opacity-90 animate-pulse-glow'}`}>
+                <Clock className="w-5 h-5" /> {todayCheckedIn ? '✅ Đã iCheck hôm nay' : 'iCheck Ngay'}
+              </button>
+            </div>
+          </motion.div>
+
           {/* AI Assistant Widget */}
           <AIAssistantWidget />
 
-          {/* Events */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm">
-            <h3 className="font-extrabold mb-5 text-[11px] uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#FF6B00]" /> Sự kiện sắp tới
-            </h3>
-            <div className="space-y-4">
-              {[
-                { day: 'Th 4', date: '25', title: 'Townhall Q1', time: '14:00-16:00', color: 'text-rose-500' },
-                { day: 'Th 6', date: '27', title: 'Happy Hour', time: '16:30-18:00', color: 'text-brand-500' },
-              ].map((evt, i) => (
-                <div key={i} className="flex gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-50 hover:border-brand-100 hover:bg-white transition-all cursor-pointer group shadow-sm shadow-slate-100/50">
-                  <div className="flex flex-col items-center justify-center w-14 h-14 bg-white rounded-2xl border border-slate-100 flex-shrink-0 shadow-sm">
-                    <span className={`text-[10px] font-black ${evt.color} uppercase tracking-wider`}>{evt.day}</span>
-                    <span className="text-xl font-black text-slate-900 leading-none mt-1">{evt.date}</span>
+          {/* Birthday Section */}
+          {!isNewEmployee && birthdayCelebrations.length > 0 && (
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }}
+              className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden relative">
+              <div className="absolute -right-2 top-0 text-5xl opacity-5 pointer-events-none">🎂</div>
+              <div className="px-5 py-3 border-b border-rose-100 flex items-center gap-2 bg-rose-50/50">
+                <Cake className="w-4 h-4 text-rose-500" />
+                <h3 className="font-extrabold text-sm text-slate-900 tracking-tight">Sinh nhật hôm nay</h3>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {birthdayCelebrations.map(c => (
+                  <div key={c.id} className="px-5 py-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <img src={c.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm ring-1 ring-slate-100" referrerPolicy="no-referrer" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-sm text-slate-900">{c.user.name}</h4>
+                        <p className="text-[11px] text-slate-500 truncate">{c.user.department}</p>
+                      </div>
+                    </div>
+                    {!c.hasWished ? (
+                      <div className="flex gap-2">
+                        <input
+                          value={wishInputs[c.id] || ''}
+                          onChange={e => setWishInputs(prev => ({ ...prev, [c.id]: e.target.value }))}
+                          placeholder="Gửi lời chúc mừng..."
+                          className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                        />
+                        <button onClick={() => handleSendCustomWish(c.id)}
+                          className="px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold hover:bg-rose-600 transition-colors shadow-sm active:scale-95 flex-shrink-0">
+                          Gửi
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-100 py-1.5 justify-center rounded-xl shadow-sm">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Đã gửi lời chúc
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0 py-1">
-                    <h4 className="font-black text-[15px] text-slate-900 group-hover:text-[#FF6B00] transition-colors">{evt.title}</h4>
-                    <p className="text-xs text-slate-400 font-bold mt-1.5 flex items-center gap-1.5 opacity-80">
-                      <Clock className="w-3.5 h-3.5" /> {evt.time}
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Anniversary Section */}
+          {!isNewEmployee && anniversaryCelebrations.length > 0 && (
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden relative">
+              <div className="absolute -right-2 top-0 text-5xl opacity-5 pointer-events-none">🏅</div>
+              <div className="px-5 py-3 border-b border-amber-100 flex items-center gap-2 bg-amber-50/50">
+                <Medal className="w-4 h-4 text-amber-500" />
+                <h3 className="font-extrabold text-sm text-slate-900 tracking-tight">Chúc mừng thâm niên</h3>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {anniversaryCelebrations.map(c => (
+                  <div key={c.id} className="px-5 py-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <img src={c.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm ring-1 ring-slate-100" referrerPolicy="no-referrer" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                          {c.user.name} 
+                          <span className="text-[10px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">{c.years} năm</span>
+                        </h4>
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{c.user.department}</p>
+                      </div>
+                    </div>
+                    {!c.hasWished ? (
+                      <div className="flex gap-2">
+                        <input
+                          value={wishInputs[c.id] || ''}
+                          onChange={e => setWishInputs(prev => ({ ...prev, [c.id]: e.target.value }))}
+                          placeholder="Chia sẻ niềm vui..."
+                          className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                        />
+                        <button onClick={() => handleSendCustomWish(c.id)}
+                          className="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition-colors shadow-sm active:scale-95 flex-shrink-0">
+                          Gửi
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-100 py-1.5 justify-center rounded-xl shadow-sm">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Đã gửi lời chúc
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Leaderboard - Tucked into Sidebar */}
+          <motion.div id="tour-leaderboard" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-extrabold text-[12px] uppercase tracking-[0.1em] text-slate-900 flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" /> Bảng xếp hạng</h3>
+            </div>
+
+            <div className="flex gap-1 mb-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <button onClick={() => setLeaderboardType('personal')} className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", leaderboardType === 'personal' ? 'bg-white text-brand-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700')}>Cá nhân</button>
+              <button onClick={() => setLeaderboardType('team')} className={cn("flex-1 py-1.5 text-xs font-bold rounded-lg transition-all", leaderboardType === 'team' ? 'bg-white text-brand-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700')}>Phòng ban</button>
+            </div>
+            <div className="flex gap-1 mb-4">
+              {(['weekly', 'monthly'] as const).map(tab => (
+                <button key={tab} onClick={() => setLeaderboardTab(tab)} className={cn("flex-1 py-1 text-[11px] font-bold rounded-lg transition-all", leaderboardTab === tab ? "bg-slate-800 text-white shadow-sm" : "text-slate-500 hover:bg-slate-100")}>{tab === 'weekly' ? 'Tuần' : 'Tháng'}</button>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              {currentLeaderboard.slice(0, 5).map((u: any, i) => (
+                <div key={i} onClick={() => leaderboardType === 'personal' && setSelectedUserId(u.name)} className={cn("flex items-center gap-3 p-2 rounded-xl transition-colors -mx-2", leaderboardType === 'personal' ? "hover:bg-slate-50 cursor-pointer group" : "")}>
+                  <span className={cn("text-center w-6 font-bold flex-shrink-0", i < 3 ? "text-lg" : "text-xs text-slate-400 mt-1")}>{i < 3 ? medals[i] : `#${i + 1}`}</span>
+                  <img src={u.avatar} alt="" className="w-9 h-9 rounded-full object-cover border border-slate-100 shadow-sm" referrerPolicy="no-referrer" />
+                  <div className="flex-1 min-w-0">
+                    <p className={cn("font-bold text-[13px] text-slate-900 truncate transition-colors", leaderboardType === 'personal' && "group-hover:text-brand-600")}>{u.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {leaderboardType === 'personal' ? (
+                        <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-1.5 py-0.5 rounded border border-brand-100">Lv.{u.level}</span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">{u.memberCount} người</span>
+                      )}
+                      <span className="text-[10px] text-slate-500 font-medium tracking-wide">{u.exp} XP</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="w-full mt-2 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors">Xem toàn bộ bảng xếp hạng</button>
+          </motion.div>
+
+          {/* Events */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
+            <h3 className="font-extrabold mb-4 text-[12px] uppercase tracking-[0.1em] text-slate-900 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-brand-500" /> Sự kiện sắp tới
+            </h3>
+            <div className="space-y-3">
+              {[
+                { day: 'Th 4', date: '25', title: 'Townhall Q1', time: '14:00 - 16:00', color: 'text-brand-500' },
+                { day: 'Th 6', date: '27', title: 'Happy Hour', time: '16:30 - 18:00', color: 'text-amber-500' },
+              ].map((evt, i) => (
+                <div key={i} className="flex gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-200 hover:bg-white transition-all cursor-pointer group shadow-sm">
+                  <div className="flex flex-col items-center justify-center w-12 h-12 bg-white rounded-xl border border-slate-100 flex-shrink-0 shadow-sm">
+                    <span className={`text-[9px] font-black ${evt.color} uppercase tracking-wider`}>{evt.day}</span>
+                    <span className="text-lg font-black text-slate-900 leading-none mt-0.5">{evt.date}</span>
+                  </div>
+                  <div className="flex-1 min-w-0 py-0.5">
+                    <h4 className="font-bold text-[14px] text-slate-900 group-hover:text-brand-600 transition-colors truncate">{evt.title}</h4>
+                    <p className="text-[11px] text-slate-500 font-medium mt-1 flex items-center gap-1.5">
+                      <Clock className="w-3 h-3 text-slate-400" /> {evt.time}
                     </p>
                   </div>
                 </div>
@@ -588,18 +573,18 @@ export const Dashboard = () => {
           </motion.div>
 
           {/* Online colleagues */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-            className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm">
-            <h3 className="font-extrabold mb-5 text-[11px] uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#10B981]" /> Đồng nghiệp online
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
+            className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-sm">
+            <h3 className="font-extrabold mb-4 text-[12px] uppercase tracking-[0.1em] text-slate-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-emerald-500" /> Đồng nghiệp Online
             </h3>
-            <div className="flex -space-x-3 mb-4">
+            <div className="flex -space-x-2.5 mb-3 px-2 mt-1">
               {['https://picsum.photos/seed/manager1/150/150', 'https://picsum.photos/seed/user3/150/150', 'https://picsum.photos/seed/user4/150/150', 'https://picsum.photos/seed/user5/150/150', 'https://picsum.photos/seed/user6/150/150'].map((avatar, i) => (
-                <img key={i} src={avatar} alt="" className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-100" referrerPolicy="no-referrer" />
+                <img key={i} src={avatar} alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-100" referrerPolicy="no-referrer" />
               ))}
-              <div className="w-10 h-10 rounded-full bg-orange-50 border-2 border-white flex items-center justify-center text-[10px] font-black text-[#FF6B00] ring-1 ring-slate-100 shadow-sm">+12</div>
+              <div className="w-9 h-9 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-black text-slate-600 ring-1 ring-slate-100 shadow-sm z-10">+12</div>
             </div>
-            <p className="text-xs text-slate-400 font-bold opacity-80">17 nhân viên đang hoạt động</p>
+            <p className="text-xs text-slate-500 font-medium">Có <strong>17</strong> nhân viên đang hoạt động</p>
           </motion.div>
         </div>
       </div>

@@ -41,6 +41,19 @@ export const Contributions = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewingQuest, setViewingQuest] = useState<typeof quests[0] | null>(null);
 
+  // Open detail modal from query param
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const questId = params.get('questId');
+    if (questId) {
+      const quest = quests.find(q => String(q.id) === String(questId));
+      if (quest) {
+        setViewingQuest(quest);
+        setShowDetailModal(true);
+      }
+    }
+  }, [quests]);
+
 
 
   const isManager = currentUser?.role === 'manager' || currentUser?.role === 'admin';

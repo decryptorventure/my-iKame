@@ -345,6 +345,7 @@ export const ToastContainer = () => {
 /* ───── AI Mascot Chat ───── */
 const AI_RESPONSES: Record<string, string> = {
   'default': 'Xin chào! Tôi là iKame Assistant 🤖. Hãy hỏi về quy trình, chính sách, OKR, hoặc bất cứ điều gì liên quan đến công việc!',
+  'new_employee': 'Chào mừng thành viên mới gia nhập đại gia đình iKame! 🎉\n\nTôi là trợ lý ảo iKame, người bạn đồng hành giúp bạn "vượt vũ môn" trong những ngày đầu tiên. Tôi có thể giúp bạn:\n- Giải đáp các nhiệm vụ Onboarding 🚀\n- Hướng dẫn chấm công, OKRs ⏰\n- Khám phá văn hóa & các bí kíp sống sót tại iKame.\n\nBạn cần tôi hỗ trợ gì cho ngày đầu tiên không?',
   'nghỉ phép': '📋 **Chính sách nghỉ phép:**\n- Phép năm: 12 ngày/năm\n- Phép ốm: có giấy BS, không giới hạn\n- Thai sản: 6 tháng (nữ), 5 ngày (nam)\n\n👉 Tạo đơn tại **iCheck > Tạo đơn nghỉ phép**.',
   'lương': '💰 Thông tin lương được mã hóa E2E. Xem phiếu lương tại **Dashboard > Widget Lương** (yêu cầu xác thực).',
   'okr': '🎯 **Hướng dẫn iGoal:**\n1. Vào **iGoal** → Tạo iGoal mới\n2. Thêm Key Results với mục tiêu cụ thể\n3. Cập nhật tiến độ hàng tuần\n4. OKR < 50% giữa quý sẽ nhận cảnh báo ⚠️',
@@ -353,19 +354,40 @@ const AI_RESPONSES: Record<string, string> = {
 };
 
 const AIMascotChat = () => {
+  const { currentUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'assistant' as const, content: AI_RESPONSES['default'] }
-  ]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+
+  // Set initial message based on role
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        { 
+          role: 'assistant', 
+          content: currentUser?.role === 'new_employee' ? AI_RESPONSES['new_employee'] : AI_RESPONSES['default'] 
+        }
+      ]);
+    }
+  }, [currentUser]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // Proactive auto-open for new employees
+  useEffect(() => {
+    if (currentUser?.role === 'new_employee' && !sessionStorage.getItem('ai_mascot_opened')) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+        sessionStorage.setItem('ai_mascot_opened', 'true');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentUser]);
+
   const QUICK_CHIPS = ['Chính sách nghỉ phép?', 'Cách kiếm EXP?', 'Hướng dẫn OKR', 'Credits là gì?'];
 
-  const { currentUser } = useAuthStore();
   const handleSend = async (text?: string) => {
     const msg = (text || input).trim();
     if (!msg) return;
