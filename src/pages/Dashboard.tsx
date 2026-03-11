@@ -253,23 +253,19 @@ export const Dashboard = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                 {onboardingQuests.slice(0, 4).map(q => (
-                  <button key={q.id} onClick={() => navigate(`/iquest?questId=${q.id}`)}
+                  <button key={q.id} onClick={() => window.location.href=`/iquest?questId=${q.id}`}
                     className="flex bg-white/80 hover:bg-white p-2.5 rounded-xl border border-brand-100 items-center justify-between transition-all hover:shadow-sm active:scale-[0.98] group">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className={cn("w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors", q.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400 group-hover:bg-brand-100 group-hover:text-brand-600')}>
                         <CheckCircle2 className="w-3.5 h-3.5" />
                       </div>
-                      <div className="text-left min-w-0">
-                        <p className={cn("text-xs font-medium truncate", q.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-900 group-hover:text-brand-700')}>{q.title}</p>
-                      </div>
+                      <h4 className={cn("text-xs font-semibold truncate transition-colors text-left", q.status === 'completed' ? 'text-emerald-700' : 'text-slate-700 group-hover:text-brand-700')}>
+                        {q.title}
+                      </h4>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </button>
                 ))}
               </div>
-              <button onClick={() => navigate('/iquest')} className="w-full inline-flex justify-center items-center gap-2 px-4 py-2 bg-brand-600 text-white font-semibold text-[12px] rounded-xl hover:bg-brand-700 transition active:scale-95 shadow-md shadow-brand/20">
-                <Award className="w-4 h-4" /> Khám phá tất cả nhiệm vụ iQuest
-              </button>
             </div>
           </motion.div>
         )}
