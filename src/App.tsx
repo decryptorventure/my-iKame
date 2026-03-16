@@ -12,6 +12,8 @@ import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { Events } from './pages/Events';
 import { EventDetail } from './pages/EventDetail';
+import { HallOfFame } from './pages/HallOfFame';
+import { HallOfFameDetail } from './pages/HallOfFameDetail';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminUsers } from './pages/admin/AdminUsers';
@@ -54,6 +56,8 @@ export default function App() {
         <Route path="/iquest" element={<ProtectedRoute><Contributions /></ProtectedRoute>} />
         <Route path="/iwiki" element={<ProtectedRoute><AppHub appId="iwiki" /></ProtectedRoute>} />
         <Route path="/ireward" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+        <Route path="/hall-of-fame" element={<ProtectedRoute><HallOfFame /></ProtectedRoute>} />
+        <Route path="/hall-of-fame/:id" element={<ProtectedRoute><HallOfFameDetail /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
         <Route path="/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
         <Route path="/hris" element={<ManagerRoute><Team /></ManagerRoute>} />

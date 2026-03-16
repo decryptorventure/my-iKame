@@ -147,6 +147,63 @@ export interface RewardHistory {
   status: 'processing' | 'delivered';
 }
 
+export interface HoFMilestone {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  icon?: string;
+  type: 'join' | 'promotion' | 'achievement' | 'project' | 'farewell' | 'custom';
+}
+
+export interface HoFTribute {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string;
+  authorTitle: string;
+  content: string;
+  createdAt: string;
+  likes: number;
+  likedBy: string[];
+}
+
+export interface HoFGalleryPhoto {
+  id: string;
+  url: string;
+  caption?: string;
+  uploadedBy: string;
+  uploadedByName: string;
+  uploadedAt: string;
+  tags?: string[];
+}
+
+export interface HoFMember {
+  id: string;
+  name: string;
+  avatar: string;
+  coverPhoto?: string;
+  title: string;
+  department: string;
+  type: 'legend' | 'alumni';
+  joinDate: string;
+  leaveDate?: string;
+  level: number;
+  quote?: string;
+  bio?: string;
+  highlights: string[];
+  milestones: HoFMilestone[];
+  tributes: HoFTribute[];
+  gallery: HoFGalleryPhoto[];
+  badges?: string[];
+  stats?: {
+    projectsCompleted?: number;
+    questsCompleted?: number;
+    eventsJoined?: number;
+    mentees?: number;
+  };
+}
+
 export interface Post {
   id: number;
   author: { name: string; avatar: string; title: string };
@@ -241,6 +298,130 @@ const INITIAL_BADGES: Badge[] = [
 const INITIAL_EVENTS: TournamentEvent[] = [
   { id: 'ev1', name: 'Đường Đua Mùa Xuân', description: 'Hoàn thành các nhiệm vụ đặc biệt mùa xuân để nhận quà khủng.', banner: 'https://picsum.photos/seed/ev1/800/300', startDate: '2026-03-01', endDate: '2026-03-31', status: 'ongoing' },
   { id: 'ev2', name: 'Tìm Kiếm Bug Thần Tốc', description: 'Giải đấu nội bộ dành riêng cho đội Dev/QA.', banner: 'https://picsum.photos/seed/ev2/800/300', startDate: '2026-04-10', endDate: '2026-04-20', status: 'upcoming' }
+];
+
+const INITIAL_HOF_MEMBERS: HoFMember[] = [
+  {
+    id: 'hof-ngoc-minh',
+    name: 'Lê Ngọc Minh',
+    avatar: 'https://picsum.photos/seed/hof-minh-avatar/300/300',
+    coverPhoto: 'https://picsum.photos/seed/hof-minh-cover/1200/400',
+    title: 'Former Engineering Director',
+    department: 'Engineering',
+    type: 'legend',
+    joinDate: '2018-03-12',
+    leaveDate: '2025-12-31',
+    level: 42,
+    quote: 'Product tốt bắt đầu từ một team biết học mỗi ngày.',
+    bio: 'Anh Minh là người đặt nền móng cho platform kỹ thuật của iKame và mentoring nhiều thế hệ kỹ sư.',
+    highlights: ['Xây nền tảng CI/CD toàn công ty', 'Dẫn dắt 4 sản phẩm chiến lược', 'Mentor hơn 20 kỹ sư trẻ'],
+    badges: ['b3', 'b5'],
+    stats: { projectsCompleted: 28, questsCompleted: 340, eventsJoined: 46, mentees: 21 },
+    milestones: [
+      { id: 'm1', date: '2018-03', title: 'Gia nhập iKame', description: 'Bắt đầu hành trình với vai trò Senior Backend Engineer.', icon: '🚀', type: 'join' },
+      { id: 'm2', date: '2020-06', title: 'Thăng chức Tech Lead', description: 'Dẫn dắt team xây dựng hệ thống microservices thế hệ mới.', icon: '⬆️', type: 'promotion' },
+      { id: 'm3', date: '2022-09', title: 'Giải thưởng iLegend', description: 'Được vinh danh vì đóng góp đặc biệt cho văn hóa chia sẻ tri thức.', icon: '🏆', type: 'achievement' },
+      { id: 'm4', date: '2024-05', title: 'Dự án Platform V2', description: 'Hoàn thành migration hệ thống với độ ổn định 99.95%.', icon: '⚙️', type: 'project' },
+      { id: 'm5', date: '2025-12', title: 'Chia tay iKame', description: 'Khép lại hành trình 8 năm, để lại di sản về con người và quy trình.', icon: '🤝', type: 'farewell' },
+    ],
+    tributes: [
+      {
+        id: 't1',
+        authorId: 'u1',
+        authorName: 'Nguyễn Văn A',
+        authorAvatar: 'https://picsum.photos/seed/user3/150/150',
+        authorTitle: 'Senior Developer',
+        content: 'Em học được từ anh Minh cách làm kỹ thuật tử tế và luôn nghĩ cho người dùng cuối.',
+        createdAt: '2026-03-01T09:15:00.000Z',
+        likes: 12,
+        likedBy: ['a1', 'u_new'],
+      },
+    ],
+    gallery: [
+      { id: 'g1', url: 'https://picsum.photos/seed/hof-minh-1/900/700', caption: 'All-hands 2022', uploadedBy: 'a1', uploadedByName: 'Trần Thị B', uploadedAt: '2026-02-15T07:00:00.000Z', tags: ['allhands', 'legend'] },
+      { id: 'g2', url: 'https://picsum.photos/seed/hof-minh-2/900/700', caption: 'Demo Day Platform V2', uploadedBy: 'u1', uploadedByName: 'Nguyễn Văn A', uploadedAt: '2026-02-20T10:10:00.000Z', tags: ['project'] },
+    ],
+  },
+  {
+    id: 'hof-thao-anh',
+    name: 'Phan Thảo Anh',
+    avatar: 'https://picsum.photos/seed/hof-thao-avatar/300/300',
+    coverPhoto: 'https://picsum.photos/seed/hof-thao-cover/1200/400',
+    title: 'Former Product Design Lead',
+    department: 'Design',
+    type: 'alumni',
+    joinDate: '2019-07-08',
+    leaveDate: '2024-11-30',
+    level: 34,
+    quote: 'Thiết kế tốt là khi người dùng không cần phải nghĩ quá nhiều.',
+    bio: 'Chị Thảo Anh dẫn dắt team UX, định hình design system và tiêu chuẩn trải nghiệm người dùng tại iKame.',
+    highlights: ['Thiết kế Design System đầu tiên', 'Chuẩn hóa 60+ luồng người dùng', 'Dẫn dắt team UX 8 thành viên'],
+    badges: ['b2', 'b5'],
+    stats: { projectsCompleted: 19, questsCompleted: 210, eventsJoined: 38, mentees: 9 },
+    milestones: [
+      { id: 'm6', date: '2019-07', title: 'Gia nhập iKame', description: 'Gia nhập Product team với vai trò Product Designer.', icon: '✨', type: 'join' },
+      { id: 'm7', date: '2021-01', title: 'Lead UX Initiative', description: 'Dẫn dắt chương trình cải thiện trải nghiệm onboarding.', icon: '🧭', type: 'project' },
+      { id: 'm8', date: '2022-08', title: 'Thăng chức Design Lead', description: 'Điều phối chiến lược UX cho các sản phẩm nội bộ.', icon: '🌟', type: 'promotion' },
+      { id: 'm9', date: '2024-11', title: 'Tạm biệt iKame', description: 'Rời iKame để theo đuổi hành trình mới trong lĩnh vực edtech.', icon: '💛', type: 'farewell' },
+    ],
+    tributes: [
+      {
+        id: 't2',
+        authorId: 'a1',
+        authorName: 'Trần Thị B',
+        authorAvatar: 'https://picsum.photos/seed/manager1/150/150',
+        authorTitle: 'Administrator',
+        content: 'Một người chị luôn truyền cảm hứng về sự chỉn chu và tinh thần phục vụ người dùng.',
+        createdAt: '2026-03-03T08:30:00.000Z',
+        likes: 9,
+        likedBy: ['u1'],
+      },
+    ],
+    gallery: [
+      { id: 'g3', url: 'https://picsum.photos/seed/hof-thao-1/900/700', caption: 'UX workshop nội bộ', uploadedBy: 'a1', uploadedByName: 'Trần Thị B', uploadedAt: '2026-02-25T09:20:00.000Z', tags: ['workshop', 'ux'] },
+      { id: 'g4', url: 'https://picsum.photos/seed/hof-thao-2/900/700', caption: 'Team Design Retreat', uploadedBy: 'u_new', uploadedByName: 'Thu Trang', uploadedAt: '2026-02-28T14:40:00.000Z', tags: ['team', 'memory'] },
+    ],
+  },
+  {
+    id: 'hof-khanh-lam',
+    name: 'Đỗ Khánh Lâm',
+    avatar: 'https://picsum.photos/seed/hof-lam-avatar/300/300',
+    coverPhoto: 'https://picsum.photos/seed/hof-lam-cover/1200/400',
+    title: 'Former People Operations Manager',
+    department: 'People & Culture',
+    type: 'legend',
+    joinDate: '2017-10-01',
+    leaveDate: '2023-08-15',
+    level: 39,
+    quote: 'Văn hóa công ty không nằm ở khẩu hiệu, mà ở hành động mỗi ngày.',
+    bio: 'Anh Lâm là người kiến tạo văn hóa học tập và ghi nhận nội bộ xuyên suốt giai đoạn tăng trưởng của iKame.',
+    highlights: ['Khởi tạo chương trình mentoring chéo', 'Xây khung năng lực 6 phòng ban', 'Dẫn dắt 120+ buổi onboarding'],
+    badges: ['b1', 'b4'],
+    stats: { projectsCompleted: 14, questsCompleted: 180, eventsJoined: 72, mentees: 16 },
+    milestones: [
+      { id: 'm10', date: '2017-10', title: 'Gia nhập iKame', description: 'Tham gia với vai trò HRBP.', icon: '👋', type: 'join' },
+      { id: 'm11', date: '2019-04', title: 'Xây chương trình iMentor', description: 'Ra mắt chương trình cố vấn nội bộ cho nhân sự mới.', icon: '🧠', type: 'achievement' },
+      { id: 'm12', date: '2021-12', title: 'People Operations Manager', description: 'Dẫn dắt team People trong giai đoạn scale-up.', icon: '📈', type: 'promotion' },
+      { id: 'm13', date: '2023-08', title: 'Khép lại hành trình', description: 'Được vinh danh tại Townhall vì các đóng góp dài hạn.', icon: '🎖️', type: 'farewell' },
+    ],
+    tributes: [
+      {
+        id: 't3',
+        authorId: 'u_new',
+        authorName: 'Thu Trang',
+        authorAvatar: 'https://picsum.photos/seed/thutrang/150/150',
+        authorTitle: 'Content Creator (Fresher)',
+        content: 'Nhờ chương trình onboarding của anh Lâm mà em hòa nhập nhanh hơn rất nhiều.',
+        createdAt: '2026-03-04T15:20:00.000Z',
+        likes: 7,
+        likedBy: ['a1', 'u1'],
+      },
+    ],
+    gallery: [
+      { id: 'g5', url: 'https://picsum.photos/seed/hof-lam-1/900/700', caption: 'Townhall quý 4', uploadedBy: 'u1', uploadedByName: 'Nguyễn Văn A', uploadedAt: '2026-03-01T10:00:00.000Z', tags: ['townhall'] },
+      { id: 'g6', url: 'https://picsum.photos/seed/hof-lam-2/900/700', caption: 'Onboarding Day', uploadedBy: 'a1', uploadedByName: 'Trần Thị B', uploadedAt: '2026-03-02T11:30:00.000Z', tags: ['onboarding', 'culture'] },
+    ],
+  },
 ];
 
 const INITIAL_NOTIFICATIONS: Notification[] = [
@@ -427,6 +608,12 @@ interface AppState {
   // Celebrations
   celebrations: CelebrationItem[];
   sendWish: (celebrationId: number) => void;
+
+  // Hall of Fame
+  hofMembers: HoFMember[];
+  addHoFTribute: (memberId: string, tribute: Omit<HoFTribute, 'id' | 'createdAt' | 'likes' | 'likedBy'>) => void;
+  toggleHoFTributeLike: (memberId: string, tributeId: string, userId: string) => void;
+  addHoFGalleryPhoto: (memberId: string, photo: Omit<HoFGalleryPhoto, 'id' | 'uploadedAt'>) => void;
 
   // Reward history
   rewardHistory: RewardHistory[];
@@ -764,6 +951,59 @@ export const useAppStore = create<AppState>()(
         }
       },
 
+      hofMembers: INITIAL_HOF_MEMBERS,
+      addHoFTribute: (memberId, tribute) => {
+        set(s => ({
+          hofMembers: s.hofMembers.map(member => {
+            if (member.id !== memberId) return member;
+            const newTribute: HoFTribute = {
+              ...tribute,
+              id: `hof-tribute-${Date.now()}`,
+              createdAt: new Date().toISOString(),
+              likes: 0,
+              likedBy: [],
+            };
+            return { ...member, tributes: [newTribute, ...member.tributes] };
+          }),
+        }));
+        get().addToast({ type: 'success', title: 'Đã gửi lời tri ân', message: 'Cảm ơn bạn đã góp lời cho Hall of Fame.' });
+      },
+      toggleHoFTributeLike: (memberId, tributeId, userId) => {
+        set(s => ({
+          hofMembers: s.hofMembers.map(member => {
+            if (member.id !== memberId) return member;
+            return {
+              ...member,
+              tributes: member.tributes.map(tribute => {
+                if (tribute.id !== tributeId) return tribute;
+                const hasLiked = tribute.likedBy.includes(userId);
+                return {
+                  ...tribute,
+                  likes: hasLiked ? Math.max(0, tribute.likes - 1) : tribute.likes + 1,
+                  likedBy: hasLiked
+                    ? tribute.likedBy.filter(id => id !== userId)
+                    : [...tribute.likedBy, userId],
+                };
+              }),
+            };
+          }),
+        }));
+      },
+      addHoFGalleryPhoto: (memberId, photo) => {
+        set(s => ({
+          hofMembers: s.hofMembers.map(member => {
+            if (member.id !== memberId) return member;
+            const newPhoto: HoFGalleryPhoto = {
+              ...photo,
+              id: `hof-photo-${Date.now()}`,
+              uploadedAt: new Date().toISOString(),
+            };
+            return { ...member, gallery: [newPhoto, ...member.gallery] };
+          }),
+        }));
+        get().addToast({ type: 'success', title: 'Đã thêm ảnh kỷ niệm', message: 'Ảnh đã xuất hiện trong Hall of Fame.' });
+      },
+
       addQuest: (quest) => set(s => ({ quests: [...s.quests, { ...quest, id: Date.now(), progress: 0, status: 'pending' }] })),
       updateQuest: (id, updates) => set(s => ({ quests: s.quests.map(q => q.id === id ? { ...q, ...updates } : q) })),
       deleteQuest: (id) => set(s => ({ quests: s.quests.filter(q => q.id !== id) })),
@@ -903,6 +1143,7 @@ export const useAppStore = create<AppState>()(
         language: s.language,
         badges: s.badges,
         events: s.events,
+        hofMembers: s.hofMembers,
       }),
     }
   )

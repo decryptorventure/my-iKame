@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, Clock, Target, BookOpen, Gift, Users, LogOut, Bell, Menu, X,
   Award, Send, Bot, Sparkles, Search, ChevronDown, FileText, Star,
-  User, Settings as SettingsIcon, ExternalLink
+  User, Settings as SettingsIcon, ExternalLink, Crown
 } from 'lucide-react';
 import { useAuthStore, useAppStore } from '../store';
 import { cn } from '../utils';
@@ -24,6 +24,7 @@ const CORE_NAV_ITEMS = [
   { id: 'dashboard', path: '/dashboard', label: 'Tổng quan', icon: Home },
   { id: 'contributions', path: '/iquest', label: 'iQuest', icon: Award },
   { id: 'rewards', path: '/ireward', label: 'iReward', icon: Gift },
+  { id: 'hall_of_fame', path: '/hall-of-fame', label: 'Hall of Fame', icon: Crown },
 ];
 
 const HUB_NAV_ITEMS = [
@@ -42,6 +43,7 @@ const SEARCH_INDEX = [
   { title: 'iQuest — Nhiệm vụ hàng ngày', path: '/iquest', category: 'Trang' },
   { title: 'iQuest — Nhiệm vụ tân thủ', path: '/iquest', category: 'Trang' },
   { title: 'iReward — Đổi quà', path: '/ireward', category: 'Trang' },
+  { title: 'Hall of Fame — Vinh danh', path: '/hall-of-fame', category: 'Trang' },
   { title: 'iCheck — Chấm công (App riêng)', path: '/icheck', category: 'Ứng dụng' },
   { title: 'iGoal — OKR (App riêng)', path: '/igoal', category: 'Ứng dụng' },
   { title: 'iWiki — Tài liệu (App riêng)', path: '/iwiki', category: 'Ứng dụng' },
